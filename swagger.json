@@ -1,0 +1,695 @@
+{
+    "openapi": "3.0.0",
+    "info": {
+        "title": "Documentação da API do Departamento de Policia",
+        "description": "Esta é a documentação da API do Departamento de Policia, onde terá todas as rotas documentadas.",
+        "version": "1.0.0"
+    },
+    "servers": [
+        {
+            "url": "http://localhost:3000",
+            "description": "Ambiente de desenvolvimento"
+        }
+    ],
+    "paths": {
+        "/agentes": {
+            "get": {
+                "summary": "Lista todos os agentes",
+                "description": "Esta rota retorna uma lista de todos os agentes do departamento de policia.",
+                "tags": ["Agentes"],
+                "responses": {
+                    "200": {
+                        "description":"Retorna todos os agentes",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "type": "array",
+                                    "example": [
+                                        {
+                                            "id": "idAgente",
+                                            "nome": "nome do agente",
+                                            "dataDeIncorporacao": "data de incorporação",
+                                            "cargo": "cargo do agente"
+                                        }
+                                    ]
+                                }
+                            }
+                        }
+                    }
+                }
+            },
+            "post": {
+                "summary": "Cria um novo agente",
+                "description": "Esta rota cria um novo agente no departamento de policia.",
+                "tags": ["Agentes"],
+                "requestBody": {
+                    "required": true,
+                    "content": {
+                        "application/json": {
+                            "schema": {
+                                "$ref": "#/components/schemas/Agente"
+                            }
+                        }
+                    }
+                },
+                "responses": {
+                    "201": {
+                        "description":"Agente criado com sucesso",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "type": "array",
+                                    "example": [
+                                        {
+                                            "id": "idAgente",
+                                            "nome": "nome do agente",
+                                            "dataDeIncorporacao": "data de incorporação",
+                                            "cargo": "cargo do agente"
+                                        }
+                                    ]
+                                }
+                            }
+                        }
+                    },
+                    "400": {
+                        "description":"Dados incompletos.",
+                        "content": {
+                            "application/json":{
+                                "schema": {
+                                    "type": "object",
+                                    "example": {
+                                        "message": "Nome, data de incorporação e cargo são obrigatórios."
+                                    }
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+        },
+        "/agentes/{id}": {
+            "get": {
+                "summary": "Busca um agente pelo ID",
+                "description": "Esta rota retorna um json com os dados de um agente específico, identificado pelo seu ID.",
+                "tags": ["Agentes"],
+                "parameters": [
+                    {
+                        "name": "id",
+                        "in": "path",
+                        "required": true,
+                        "description": "ID do agente",
+                        "schema": {
+                            "type": "string"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description":"Retorna todos os agentes",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "type": "array",
+                                    "example": [
+                                        {
+                                            "id": "idAgente",
+                                            "nome": "nome do agente",
+                                            "dataDeIncorporacao": "data de incorporação",
+                                            "cargo": "cargo do agente"
+                                        }
+                                    ]
+                                }                                
+                            }
+                        }
+                    },
+                    "404": {
+                        "description":"Agente inexistente.",
+                        "content": {
+                            "application/json":{
+                                "schema": {
+                                    "type": "object",
+                                    "example": {
+                                        "message": "Agente não encontrado."
+                                    }
+                                }
+                            }
+                        }
+                    }
+                }
+            },
+            "put": {
+                "summary": "Atualiza um agente pelo ID",
+                "description": "Esta rota atualiza os dados de um agente específico, identificado pelo seu ID.",
+                "tags": ["Agentes"],
+                "parameters": [
+                    {
+                        "name": "id",
+                        "in": "path",
+                        "required": true,
+                        "description": "ID do agente",
+                        "schema": {
+                            "type": "string"
+                        }
+                    }
+                ],
+                "requestBody": {
+                    "required": true,
+                    "content": {
+                        "application/json": {
+                            "schema": {
+                                "type": "object",
+                                "required": ["nome", "dataDeIncorporacao", "cargo"],
+                                "properties": {
+                                    "nome": {
+                                        "type": "string"
+                                    },
+                                    "dataDeIncorporacao": {
+                                        "type": "string",
+                                        "format": "date"
+                                    },
+                                    "cargo": {
+                                        "type": "string"
+                                    }
+                                }
+                            }
+                        }
+                    }
+                },
+                "responses": {
+                    "200": {
+                        "description":"Agente atualizado com sucesso",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "type": "array",
+                                    "example": [
+                                        {
+                                            "id": "idAgente",
+                                            "nome": "nome do agente",
+                                            "dataDeIncorporacao": "data de incorporação",
+                                            "cargo": "cargo do agente"
+                                        }
+                                    ]
+                                }
+                            }
+                        }
+                    },
+                    "400": {
+                        "description":"Dados incompletos.",
+                        "content": {
+                            "application/json":{
+                                "schema": {
+                                    "type": "object",
+                                    "example": {
+                                        "message": "Nome, data de incorporação e cargo são obrigatórios."
+                                    }
+                                }
+                            }
+                        }
+                    },
+                    "404": {
+                        "description":"Agente inexistente.",
+                        "content": {
+                            "application/json":{
+                                "schema": {
+                                    "type": "object",
+                                    "example": {
+                                        "message": "Agente não encontrado."
+                                    }
+                                }
+                            }
+                        }
+                    }
+                }
+            },
+            "patch": {
+                "summary": "Atualiza parcialmente um agente pelo ID",
+                "description": "Esta rota atualiza parcialmente os dados de um agente específico pelo seu ID.",
+                "tags": ["Agentes"],
+                "parameters": [
+                    {
+                        "name": "id",
+                        "in": "path",
+                        "required": true,
+                        "description": "ID do agente",
+                        "schema": {
+                            "type": "string"
+                        }
+                    }
+                ],
+                "requestBody": {
+                    "required": true,
+                    "content": {
+                        "application/json": {
+                            "schema": {
+                                "type": "object",
+                                "required": ["nome", "dataDeIncorporacao", "cargo"],
+                                "properties": {
+                                    "nome": {
+                                        "type": "string"
+                                    },
+                                    "dataDeIncorporacao": {
+                                        "type": "string",
+                                        "format": "date"
+                                    },
+                                    "cargo": {
+                                        "type": "string"
+                                    }
+                                }
+                            }
+                        }
+                    }
+                },
+                "responses": {
+                    "200": {
+                        "description":"Agente atualizado com sucesso",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "type": "array",
+                                    "example": [
+                                        {
+                                            "id": "idAgente",
+                                            "nome": "nome do agente",
+                                            "dataDeIncorporacao": "data de incorporação",
+                                            "cargo": "cargo do agente"
+                                        }
+                                    ]
+                                }
+                            }
+                        }
+                    },
+                    "400": {
+                        "description":"Dados incompletos.",
+                        "content": {
+                            "application/json":{
+                                "schema": {
+                                    "type": "object",
+                                    "example": {
+                                        "message": "Nome, data de incorporação ou cargo devem ser fornecidos."
+                                    }
+                                }
+                            }
+                        }
+                    },
+                    "404": {
+                        "description":"Agente inexistente.",
+                        "content": {
+                            "application/json":{
+                                "schema": {
+                                    "type": "object",
+                                    "example": {
+                                        "message": "Agente não encontrado."
+                                    }
+                                }
+                            }
+                        }
+                    }
+                }
+            },
+            "delete": {
+                "summary": "Deleta um agente pelo ID",
+                "description": "Esta rota exclui um agente específico pelo seu ID.",
+                "tags": ["Agentes"],
+                "parameters": [
+                    {
+                        "name": "id",
+                        "in": "path",
+                        "required": true,
+                        "description": "ID do agente",
+                        "schema": {
+                            "type": "string"
+                        }
+                    }
+                ],
+                "responses": {
+                    "204": {
+                        "description":"Agente deletado com sucesso"
+                    },
+                    "404": {
+                        "description":"Agente inexistente.",
+                        "content": {
+                            "application/json":{
+                                "schema": {
+                                    "type": "object",
+                                    "example": {
+                                        "message": "Agente não encontrado."
+                                    }
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+        },
+        "/casos": {
+            "get": {
+                "summary": "Lista todos os casos",
+                "description": "Esta rota retorna uma lista de todos os casos registrados no departamento de policia.",
+                "tags": ["Casos"],
+                "responses": {
+                    "200": {
+                        "description":"Retorna todos os casos",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "type": "array",
+                                    "example": [
+                                        {
+                                            "id": "idCasos",
+                                            "titulo": "titulo",
+                                            "descricao": "descrição.",
+                                            "status": "status",
+                                            "agente_id": "idAgente"                             
+                                        }
+                                    ]
+                                }
+                            }
+                        }
+                    }
+                }
+            },
+            "post": {
+                "summary": "Cria um novo caso",
+                "description": "Esta rota permite a criação de um novo caso no departamento de policia.",
+                "tags": ["Casos"],
+                "requestBody": {
+                    "required": true,
+                    "content": {
+                        "application/json": {
+                            "schema": {
+                                "$ref": "#/components/schemas/Caso"
+                            }
+                        }
+                    }
+                },
+                "responses": {
+                    "201": {
+                        "description":"Caso criado com sucesso",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "type": "array",
+                                    "example": [
+                                        {
+                                            "id": "idCasos",
+                                            "titulo": "titulo",
+                                            "descricao": "descrição.",
+                                            "status": "status",
+                                            "agente_id": "idAgente"                             
+                                        }
+                                    ]
+                                }
+                            }
+                        }
+                    },
+                    "400": {
+                        "description":"Dados incompletos.",
+                        "content": {
+                            "application/json":{
+                                "schema": {
+                                    "type": "object",
+                                    "example": {
+                                        "message": "Titulo, descrição, status e id do agente são obrigatórios."
+                                    }
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+        },
+        "/casos/{id}": {
+            "get": {
+                "summary": "Busca um caso pelo ID",
+                "description": "Esta rota retorna os detalhes de um caso específico pelo seu ID.",
+                "tags": ["Casos"],
+                "parameters": [
+                    {
+                        "name": "id",
+                        "in": "path",
+                        "required": true,
+                        "description": "ID do caso",
+                        "schema": {
+                            "type": "string"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description":"Retorna o caso solicitado",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "type": "array",
+                                    "example": [
+                                        {
+                                            "id": "idCasos",
+                                            "titulo": "titulo",
+                                            "descricao": "descrição.",
+                                            "status": "status",
+                                            "agente_id": "idAgente"                             
+                                        }
+                                    ]
+                                }
+                            }
+                        }
+                    },
+                    "404": {
+                        "description":"Caso inexistente.",
+                        "content": {
+                            "application/json":{
+                                "schema": {
+                                    "type": "object",
+                                    "example": {
+                                        "message": "Caso não encontrado."
+                                    }
+                                }
+                            }
+                        }
+                    }
+                }
+            },
+            "put": {
+                "summary": "Atualiza um caso pelo ID",
+                "description": "Esta rota atualiza os dados de um caso específico pelo seu ID.",
+                "tags": ["Casos"],
+                "parameters": [
+                    {
+                        "name": "id",
+                        "in": "path",
+                        "required": true,
+                        "description": "ID do caso",
+                        "schema": {
+                            "type": "string"
+                        }
+                    }
+                ],
+                "requestBody": {
+                    "required": true,
+                    "content": {
+                        "application/json": {
+                            "schema": {
+                                "$ref": "#/components/schemas/Caso"
+                            }
+                        }
+                    }
+                },
+                "responses": {
+                    "200": {
+                        "description":"Caso atualizado com sucesso",
+                        "content": {
+                            "application/json": {
+                                    "type": "array",
+                                    "example": [
+                                        {
+                                            "id": "idCasos",
+                                            "titulo": "titulo",
+                                            "descricao": "descrição.",
+                                            "status": "status",
+                                            "agente_id": "idAgente"                             
+                                        }
+                                    ]
+                            }
+                        }
+                    },
+                    "400": {
+                        "description":"Dados incompletos.",
+                        "content": {
+                            "application/json":{
+                                "schema": {
+                                    "type": "object",
+                                    "example": {
+                                        "message": "Titulo, descrição, status e id do agente são obrigatórios."
+                                    }
+                                }
+                            }
+                        }
+                    },
+                    "404": {
+                        "description":"Caso inexistente.",
+                        "content": {
+                            "application/json":{
+                                "schema": {
+                                    "type": "object",
+                                    "example": {
+                                        "message": "Caso não encontrado."
+                                    }
+                                }
+                            }
+                        }
+                    }
+                }
+            },
+            "patch": {
+                "summary": "Atualiza parcialmente um caso pelo ID",
+                "description": "Esta rota atualiza parcialmente os dados de um caso específico pelo seu ID.",
+                "tags": ["Casos"],
+                "parameters": [
+                    {
+                        "name": "id",
+                        "in": "path",
+                        "required": true,
+                        "description": "ID do caso",
+                        "schema": {
+                            "type": "string"
+                        }
+                    }
+                ],
+                "requestBody": {
+                    "required": true,
+                    "content": {
+                        "application/json": {
+                            "schema": {
+                                "$ref": "#/components/schemas/Caso"
+                            }
+                        }
+                    }
+                },
+                "responses": {
+                    "200": {
+                        "description":"Caso atualizado com sucesso",
+                        "content": {
+                            "application/json": {
+                                    "type": "array",
+                                    "example": [
+                                        {
+                                            "id": "idCasos",
+                                            "titulo": "titulo",
+                                            "descricao": "descrição.",
+                                            "status": "status",
+                                            "agente_id": "idAgente"                             
+                                        }
+                                    ]
+                            }
+                        }
+                    },
+                    "400": {
+                        "description":"Dados incompletos.",
+                        "content": {
+                            "application/json":{
+                                "schema": {
+                                    "type": "object",
+                                    "example": {
+                                        "message": "Titulo, descrição, status ou id do agente devem ser fornecidos."
+                                    }
+                                }
+                            }
+                        }
+                    },
+                    "404": {
+                        "description":"Caso inexistente.",
+                        "content": {
+                            "application/json":{
+                                "schema": {
+                                    "type": "object",
+                                    "example": {
+                                        "message": "Caso não encontrado."
+                                    }
+                                }
+                            }
+                        }
+                    }
+                }
+            },
+            "delete": {
+                "summary": "Remove um caso pelo ID",
+                "description": "Esta rota remove um caso específico pelo seu ID.",
+                "tags": ["Casos"],
+                "parameters": [
+                    {
+                        "name": "id",
+                        "in": "path",
+                        "required": true,
+                        "description": "ID do caso",
+                        "schema": {
+                            "type": "string"
+                        }
+                    }
+                ],
+                "responses": {
+                    "204": {
+                        "description":"Caso removido com sucesso"
+                    },
+                    "404": {
+                        "description":"Caso inexistente.",
+                        "content": {
+                            "application/json":{
+                                "schema": {
+                                    "type": "object",
+                                    "example": {
+                                        "message": "Caso não encontrado."
+                                    }
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+        }
+    },
+    "components": {
+        "schemas": {
+            "Agente": {
+                "type": "object",
+                "required": ["nome", "dataDeIncorporacao", "cargo"],
+                "properties": {
+                    "id": {
+                        "type": "string"
+                    },
+                    "nome": {
+                        "type": "string"
+                    },
+                    "dataDeIncorporacao": {
+                        "type": "string",
+                        "format": "date"
+                    },
+                    "cargo": {
+                        "type": "string"
+                    }
+                }
+            },
+            "Caso": {
+                "type": "object",
+                "required": ["titulo", "descricao", "status", "agente_id"],
+                "properties": {
+                    "id": {
+                        "type": "string"
+                    },
+                    "titulo": {
+                        "type": "string"
+                    },
+                    "descricao": {
+                        "type": "string"
+                    },
+                    "status": {
+                        "type": "string"
+                    },
+                    "agente_id": {
+                        "type": "string"
+                    }
+                }
+            }
+        }
+    }
+}
