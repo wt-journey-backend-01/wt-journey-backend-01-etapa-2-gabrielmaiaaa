@@ -78,7 +78,12 @@
                                 "schema": {
                                     "type": "object",
                                     "example": {
-                                        "message": "Nome, data de incorporação e cargo são obrigatórios."
+                                        "dadosIncompletos": {
+                                            "message": "Nome, data de incorporação e cargo são obrigatórios."
+                                        },
+                                        "dataInvalida": {
+                                            "message": "Data de Incorporação inválida ou no futuro."
+                                        }
                                     }
                                 }
                             }
@@ -201,7 +206,12 @@
                                 "schema": {
                                     "type": "object",
                                     "example": {
-                                        "message": "Nome, data de incorporação e cargo são obrigatórios."
+                                        "dadosIncompletos": {
+                                            "message": "Nome, data de incorporação e cargo são obrigatórios."
+                                        },
+                                        "dataInvalida": {
+                                            "message": "Data de Incorporação inválida ou no futuro."
+                                        }
                                     }
                                 }
                             }
@@ -286,7 +296,12 @@
                                 "schema": {
                                     "type": "object",
                                     "example": {
-                                        "message": "Nome, data de incorporação ou cargo devem ser fornecidos."
+                                        "dadosIncompletos": {
+                                            "message": "Nome, data de incorporação e cargo são obrigatórios."
+                                        },
+                                        "dataInvalida": {
+                                            "message": "Data de Incorporação inválida ou no futuro."
+                                        }
                                     }
                                 }
                             }
@@ -410,7 +425,12 @@
                                 "schema": {
                                     "type": "object",
                                     "example": {
-                                        "message": "Titulo, descrição, status e id do agente são obrigatórios."
+                                        "dadosIncompletos": {
+                                            "message": "Titulo, descrição, status e id do agente são obrigatórios."
+                                        },
+                                        "statusInvalido": {
+                                            "message": "Tipo de status inválido. Selecionar 'aberto' ou 'solucionado'."
+                                        }
                                     }
                                 }
                             }
@@ -520,7 +540,12 @@
                                 "schema": {
                                     "type": "object",
                                     "example": {
-                                        "message": "Titulo, descrição, status e id do agente são obrigatórios."
+                                        "dadosIncompletos": {
+                                            "message": "Titulo, descrição, status e id do agente são obrigatórios."
+                                        },
+                                        "statusInvalido": {
+                                            "message": "Tipo de status inválido. Selecionar 'aberto' ou 'solucionado'."
+                                        }
                                     }
                                 }
                             }
@@ -591,7 +616,12 @@
                                 "schema": {
                                     "type": "object",
                                     "example": {
-                                        "message": "Titulo, descrição, status ou id do agente devem ser fornecidos."
+                                        "dadosIncompletos": {
+                                            "message": "Titulo, descrição, status e id do agente são obrigatórios."
+                                        },
+                                        "statusInvalido": {
+                                            "message": "Tipo de status inválido. Selecionar 'aberto' ou 'solucionado'."
+                                        }
                                     }
                                 }
                             }

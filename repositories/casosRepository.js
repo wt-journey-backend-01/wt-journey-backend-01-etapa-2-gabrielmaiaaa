@@ -40,10 +40,7 @@ function atualizarCaso(id, casoAtualizado) {
         return false;
     }
 
-    casos[idCasos].titulo = casoAtualizado.titulo;
-    casos[idCasos].descricao = casoAtualizado.descricao;
-    casos[idCasos].status = casoAtualizado.status;
-    casos[idCasos].agente_id = casoAtualizado.agente_id;
+    casos[idCasos] = { id: casos[idCasos].id, ...casoAtualizado };
 
     return casos[idCasos];
 }
@@ -55,6 +52,7 @@ function atualizarParcialCaso(id, casoAtualizado) {
         return false;
     }
 
+    casos[idCasos].id = casos[idCasos].id;  
     casos[idCasos].titulo = casoAtualizado.titulo || casos[idCasos].titulo;
     casos[idCasos].descricao = casoAtualizado.descricao || casos[idCasos].descricao;
     casos[idCasos].status = casoAtualizado.status || casos[idCasos].status;

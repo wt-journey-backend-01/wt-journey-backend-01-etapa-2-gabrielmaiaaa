@@ -1,4 +1,5 @@
 const casosRepository = require("../repositories/casosRepository")
+const agentesRepository = require("../repositories/agentesRepository")
 
 function getAllCasos(req, res) {
     const dados = casosRepository.findAll();
@@ -24,6 +25,14 @@ function postCaso(req, res) {
         return res.status(400).json({ error: "Todos os campos são obrigatórios." });
     }
 
+    if (status !== "aberto" && status !== "solucionado") {
+        return res.status(400).json({ error: "Tipo de status inválido. Selecionar 'aberto' ou 'solucionado'." });
+    }
+
+    if (!agentesRepository.encontrarAgenteById(agente_id)) {
+        return res.status(404).json({ error: "Agente informado não encontrado." });
+    }
+
     const novoCaso = { titulo, descricao, status, agente_id };
     const dados = casosRepository.adicionarCaso(novoCaso);
 
@@ -36,6 +45,14 @@ function putCaso(req, res) {
 
     if (!titulo || !descricao || !status || !agente_id) {
         return res.status(400).json({ error: "Todos os campos são obrigatórios." });
+    }
+
+    if (status !== "aberto" && status !== "solucionado") {
+        return res.status(400).json({ error: "Tipo de status inválido. Selecionar 'aberto' ou 'solucionado'." });
+    }
+
+    if (!agentesRepository.encontrarAgenteById(agente_id)) {
+        return res.status(404).json({ error: "Agente informado não encontrado." });
     }
 
     const casoAtualizado = { titulo, descricao, status, agente_id };
@@ -54,6 +71,14 @@ function patchCaso(req, res) {
 
     if (!titulo && !descricao && !status && !agente_id) {
         return res.status(400).json({ error: "Pelo menos um campo deve ser fornecido." });
+    }
+
+    if (status !== "aberto" && status !== "solucionado") {
+        return res.status(400).json({ error: "Tipo de status inválido. Selecionar 'aberto' ou 'solucionado'." });
+    }
+
+    if (!agentesRepository.encontrarAgenteById(agente_id)) {
+        return res.status(404).json({ error: "Agente informado não encontrado." });
     }
 
     const casoAtualizado = { titulo, descricao, status, agente_id };

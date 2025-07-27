@@ -38,9 +38,7 @@ function atualizarAgente(id, agenteAtualizado) {
         return false;
     }
 
-    agentes[idAgente].nome = agenteAtualizado.nome;
-    agentes[idAgente].cargo = agenteAtualizado.cargo;
-    agentes[idAgente].dataDeIncorporacao = agenteAtualizado.dataDeIncorporacao;
+    agentes[idAgente] = { id: agentes[idAgente].id, ...agenteAtualizado };
     
     return agentes[idAgente];
 }
@@ -52,6 +50,7 @@ function atualizarParcialAgente(id, agenteAtualizado) {
         return false;
     }
 
+    agentes[idAgente].id = agentes[idAgente].id;  
     agentes[idAgente].nome = agenteAtualizado.nome || agentes[idAgente].nome;
     agentes[idAgente].cargo = agenteAtualizado.cargo || agentes[idAgente].cargo;
     agentes[idAgente].dataDeIncorporacao = agenteAtualizado.dataDeIncorporacao || agentes[idAgente].dataDeIncorporacao;

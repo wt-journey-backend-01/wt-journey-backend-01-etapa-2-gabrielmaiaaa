@@ -1,4 +1,24 @@
-const agentesRepository = require("../repositories/agenteRepository")
+const agentesRepository = require("../repositories/agentesRepository")
+
+function isValidDate(dateString) {
+    const data = new Date(dateString);
+    const regex = /^\d{4}-\d{2}-\d{2}$/;
+
+    if (!regex.test(dateString)) {
+        return false;
+    }
+
+    if (isNaN(data.getTime())) {
+        return false;
+    }
+
+    const hoje = new Date();
+    if (data > hoje){
+        return false;
+    }
+
+    return true;
+}
 
 function getAllAgentes(req, res) {
     const dados = agentesRepository.encontrarAgentes();
@@ -24,6 +44,10 @@ function postAgente(req, res) {
         return res.status(400).json({ error: "Todos os campos são obrigatórios." });
     }
 
+    if (!isValidDate(dataDeIncorporacao)) {
+        return res.status(400).json({ error: "Data de Incorporação inválida ou no futuro." });
+    }
+
     const novoAgente = { nome, dataDeIncorporacao, cargo };
     const dados = agentesRepository.adicionarAgente(novoAgente);
     
@@ -36,6 +60,10 @@ function putAgente(req, res) {
 
     if(!nome || !dataDeIncorporacao || !cargo) {
         return res.status(400).json({ error: "Todos os campos são obrigatórios." });
+    }
+
+    if (!isValidDate(dataDeIncorporacao)) {
+        return res.status(400).json({ error: "Data de Incorporação inválida ou no futuro." });
     }
 
     const agenteAtualizado = { nome, dataDeIncorporacao, cargo };
@@ -54,6 +82,10 @@ function patchAgente(req, res) {
     
     if(!nome && !dataDeIncorporacao && !cargo) {
         return res.status(400).json({ error: "Pelo menos um campo deve ser fornecido." });
+    }
+
+    if (!isValidDate(dataDeIncorporacao)) {
+        return res.status(400).json({ error: "Data de Incorporação inválida ou no futuro." });
     }
 
     const agenteAtualizado = { nome, dataDeIncorporacao, cargo };
