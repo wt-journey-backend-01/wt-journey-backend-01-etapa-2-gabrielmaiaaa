@@ -7,6 +7,18 @@ const agentes = [
         "dataDeIncorporacao": "1992/10/04",
         "cargo": "delegado"
     }, 
+    {
+        "id": "401bccf5-cf9e-489d-8412-446cd169a0f1",
+        "nome": "Rommel Carneiro",
+        "dataDeIncorporacao": "1994/10/04",
+        "cargo": "delegado"
+    }, 
+    {
+        "id": "401bccf5-cf9e-489d-8412-446cd169a0f1",
+        "nome": "Rommel Carneiro",
+        "dataDeIncorporacao": "1990/10/04",
+        "cargo": "delegado"
+    }, 
 ]
 
 function encontrarAgentes(){
@@ -50,7 +62,6 @@ function atualizarParcialAgente(id, agenteAtualizado) {
         return false;
     }
 
-    agentes[idAgente].id = agentes[idAgente].id;  
     agentes[idAgente].nome = agenteAtualizado.nome || agentes[idAgente].nome;
     agentes[idAgente].cargo = agenteAtualizado.cargo || agentes[idAgente].cargo;
     agentes[idAgente].dataDeIncorporacao = agenteAtualizado.dataDeIncorporacao || agentes[idAgente].dataDeIncorporacao;
@@ -69,11 +80,39 @@ function apagarAgente(id) {
     return true;
 }
 
+function listarAgentesPorCargo(cargo) {
+    const agente = agentes.filter((agente) => agente.cargo === cargo);
+
+    return agente;
+}
+
+function listarDataDeIncorporacao(sort) {
+    if (sort === "dataDeIncorporacao") {
+        const dados = agentes.sort((agente1, agente2) => {
+            const data1 = new Date(agente1.dataDeIncorporacao);
+            const data2 = new Date(agente2.dataDeIncorporacao);
+            return data1.getTime() - data2.getTime();
+        });
+
+        return dados;
+    }
+
+    const dados = agentes.sort((agente1, agente2) => {
+        const data1 = new Date(agente1.dataDeIncorporacao);
+        const data2 = new Date(agente2.dataDeIncorporacao);
+        return data2.getTime() - data1.getTime();
+    });
+
+    return dados;
+}
+
 module.exports = {
     encontrarAgentes,
     encontrarAgenteById,
     adicionarAgente,
     atualizarAgente,
     atualizarParcialAgente,
-    apagarAgente
+    apagarAgente,
+    listarAgentesPorCargo,
+    listarDataDeIncorporacao
 }

@@ -1,4 +1,5 @@
 const { v4: uuidv4 } = require('uuid');
+const agentesRepository = require("../repositories/agentesRepository");
 
 const casos = [
     {
@@ -52,7 +53,6 @@ function atualizarParcialCaso(id, casoAtualizado) {
         return false;
     }
 
-    casos[idCasos].id = casos[idCasos].id;  
     casos[idCasos].titulo = casoAtualizado.titulo || casos[idCasos].titulo;
     casos[idCasos].descricao = casoAtualizado.descricao || casos[idCasos].descricao;
     casos[idCasos].status = casoAtualizado.status || casos[idCasos].status;
@@ -73,11 +73,49 @@ function apagarCaso(id) {
     return true;
 }
 
+function listarCasosPorAgente(agente_id) {
+    const dados = casos.filter((caso) => caso.agente_id === agente_id);
+
+    return dados;
+}
+
+function listarCasosPorStatus(status) {
+    const dados = casos.filter((caso) => caso.status === status);
+
+    return dados;
+}
+
+function encontrarAgenteDoCaso(caso_id) {
+    const idCaso = casos.findIndex((caso) => caso.id === caso_id);
+
+    if(idCaso === -1) {
+        return false
+    }
+
+    const idAgente = casos[idCaso].agente_id;
+    const dados = agentesRepository.encontrarAgenteById(idAgente);
+
+    return dados;
+}
+
+function encontrarCasoPorString(search) {
+    const dados = casos.filter((caso) => 
+        caso.titulo.toLowerCase().includes(search.toLowerCase()) ||
+        caso.descricao.toLowerCase().includes(search.toLowerCase())
+    );
+
+    return dados;
+}
+
 module.exports = {
     findAll,
     findById,
     adicionarCaso,
     atualizarCaso,
     atualizarParcialCaso,
-    apagarCaso
+    apagarCaso,
+    listarCasosPorAgente,
+    listarCasosPorStatus,
+    encontrarAgenteDoCaso,
+    encontrarCasoPorString
 };

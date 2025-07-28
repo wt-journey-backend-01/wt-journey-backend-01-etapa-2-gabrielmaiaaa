@@ -357,6 +357,86 @@
                 }
             }
         },
+        "/agentes?cargo={campo}": {
+            "get": {
+                "summary": "Lista todos os agentes do cargo escolhido",
+                "description": "Esta rota recebe um query de algum cargo e retorna uma lista de todos os agentes do departamento de policia com aquele cargo.",
+                "tags": ["Agentes"],
+                "responses": {
+                    "200": {
+                        "description":"Retorna todos os agentes do cargo escolhido",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "type": "array",
+                                    "example": [
+                                        {
+                                            "id": "idAgente",
+                                            "nome": "nome do agente",
+                                            "dataDeIncorporacao": "data de incorporação",
+                                            "cargo": "cargo do agente"
+                                        }
+                                    ]
+                                }
+                            }
+                        }
+                    },
+                    "404": {
+                        "description":"Dados não encontrados.",
+                        "content": {
+                            "application/json":{
+                                "schema": {
+                                    "type": "object",
+                                    "example": {
+                                        "message": "Tipo de cargo inválido. Selecionar 'inspetor' ou 'delegado'."
+                                    }
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+        },
+        "/agentes?sort={campo}": {
+            "get": {
+                "summary": "Lista todos os agentes de forma ordenada crescente (dataDeIncorporacao) ou decrescente (-dataDeIncorporacao))",
+                "description": "Esta rota recebe um query (dataDeIncorporacao e -dataDeIncorporacao) e retorna uma lista de todos os agentes do departamento de policia crescente ou decrescente.",
+                "tags": ["Agentes"],
+                "responses": {
+                    "200": {
+                        "description":"Retorna todos os agentes ordenados",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "type": "array",
+                                    "example": [
+                                        {
+                                            "id": "idAgente",
+                                            "nome": "nome do agente",
+                                            "dataDeIncorporacao": "data de incorporação",
+                                            "cargo": "cargo do agente"
+                                        }
+                                    ]
+                                }
+                            }
+                        }
+                    },
+                    "404": {
+                        "description":"Dados incompletos.",
+                        "content": {
+                            "application/json":{
+                                "schema": {
+                                    "type": "object",
+                                    "example": {
+                                        "message": "Tipo de sort inválido. Selecionar 'dataDeIncorporacao' ou '-dataDeIncorporacao'."
+                                    }
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+        },
         "/casos": {
             "get": {
                 "summary": "Lista todos os casos",
@@ -669,6 +749,217 @@
                                     "type": "object",
                                     "example": {
                                         "message": "Caso não encontrado."
+                                    }
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+        },
+        "/casos?agente_id={campo}": {
+            "get": {
+                "summary": "Lista todos os casos atribuídos à um agente específico",
+                "description": "Esta rota retorna uma lista de todos os casos registrados no departamento de policia para aquele agente em específico.",
+                "tags": ["Casos"],
+                "responses": {
+                    "200": {
+                        "description":"Retorna todos os casos com o id do agente",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "type": "array",
+                                    "example": [
+                                        {
+                                            "id": "idCasos",
+                                            "titulo": "titulo",
+                                            "descricao": "descrição.",
+                                            "status": "status",
+                                            "agente_id": "idAgente"                             
+                                        }
+                                    ]
+                                }
+                            }
+                        }
+                    },
+                    "404": {
+                        "description":"Dados não encontrados.",
+                        "content": {
+                            "application/json":{
+                                "schema": {
+                                    "type": "object",
+                                    "example": {
+                                        "idAgenteInvalido": {
+                                            "message": "ID do agente informado não encontrado no sistema'."
+                                        },
+                                        "casoNaoEncontrado": {
+                                            "message": "Caso não encontrado com esse id de agente"
+                                        }
+                                    }
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+        },
+        "/casos?status={campo}": {
+            "get": {
+                "summary": "Lista todos os casos com um status específico",
+                "description": "Esta rota retorna uma lista de todos os casos registrados no departamento de policia com o status especificado.",
+                "tags": ["Casos"],
+                "responses": {
+                    "200": {
+                        "description":"Retorna todos os casos com esse status",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "type": "array",
+                                    "example": [
+                                        {
+                                            "id": "idCasos",
+                                            "titulo": "titulo",
+                                            "descricao": "descrição.",
+                                            "status": "status",
+                                            "agente_id": "idAgente"                             
+                                        }
+                                    ]
+                                }
+                            }
+                        }
+                    },
+                    "400": {
+                        "description":"Dados incompletos.",
+                        "content": {
+                            "application/json":{
+                                "schema": {
+                                    "type": "object",
+                                    "example": {
+                                        "message": "Tipo de status inválido. Selecionar 'aberto' ou 'solucionado'."
+                                    }
+                                }
+                            }
+                        }
+                    },
+                    "404": {
+                        "description":"Dados não encontrados.",
+                        "content": {
+                            "application/json":{
+                                "schema": {
+                                    "type": "object",
+                                    "example": {
+                                        "message": "Caso não encontrado com esse status!"
+                                    }
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+        },
+        "/casos/{id}/agente": {
+            "get": {
+                "summary": "Busca dados do agente responsável por um caso pelo ID do caso",
+                "description": "Esta rota retorna os detalhes do agente responsável por um caso específico pelo seu ID.",
+                "tags": ["Casos"],
+                "parameters": [
+                    {
+                        "name": "id",
+                        "in": "path",
+                        "required": true,
+                        "description": "ID do caso",
+                        "schema": {
+                            "type": "string"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description":"Retorna o caso solicitado",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "type": "array",
+                                    "example": [
+                                        {
+                                            "id": "idCasos",
+                                            "titulo": "titulo",
+                                            "descricao": "descrição.",
+                                            "status": "status",
+                                            "agente_id": "idAgente"                             
+                                        }
+                                    ]
+                                }
+                            }
+                        }
+                    },
+                    "404": {
+                        "description":"Caso inexistente.",
+                        "content": {
+                            "application/json":{
+                                "schema": {
+                                    "type": "object",
+                                    "example": {
+                                        "idCasoInvalido": {
+                                            "message": "ID do caso informado não encontrado'."
+                                        },
+                                        "agenteNaoEncontrado": {
+                                            "message": "Agente não encontrado. Verifique se o agente está registrado no sistema"
+                                        }
+                                    }
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+        },
+        "/casos/search?q={campo}": {
+            "get": {
+                "summary": "Lista todos os casos com uma palavra específica",
+                "description": "Esta rota retorna uma lista de todos os casos registrados no departamento de policia que contêm a palavra especificada.",
+                "tags": ["Casos"],
+                "responses": {
+                    "200": {
+                        "description":"Retorna todos os casos com essa palavra",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "type": "array",
+                                    "example": [
+                                        {
+                                            "id": "idCasos",
+                                            "titulo": "titulo",
+                                            "descricao": "descrição.",
+                                            "status": "status",
+                                            "agente_id": "idAgente"                             
+                                        }
+                                    ]
+                                }
+                            }
+                        }
+                    },
+                    "400": {
+                        "description":"Dados incompletos.",
+                        "content": {
+                            "application/json":{
+                                "schema": {
+                                    "type": "object",
+                                    "example": {
+                                        "message": "Paramêtro não encontrado. Informe uma palavra para buscar."
+                                    }
+                                }
+                            }
+                        }
+                    },
+                    "404": {
+                        "description":"Dados não encontrados.",
+                        "content": {
+                            "application/json":{
+                                "schema": {
+                                    "type": "object",
+                                    "example": {
+                                        "message": "Nenhum caso encontrado com a palavra fornecida."
                                     }
                                 }
                             }

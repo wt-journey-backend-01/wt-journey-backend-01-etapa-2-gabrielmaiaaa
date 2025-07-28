@@ -21,6 +21,28 @@ function isValidDate(dateString) {
 }
 
 function getAllAgentes(req, res) {
+    const { cargo, sort } = req.query;
+
+    if (cargo) {
+        if (cargo !== "inspetor" && cargo !== "delegado") {
+            return res.status(400).json({ error: "Tipo de cargo inválido. Selecionar 'inspetor' ou 'delegado'." });
+        }
+
+        const dados = agentesRepository.listarAgentesPorCargo(cargo);
+
+        return res.status(200).json(dados);
+    }
+
+    if (sort) {
+        if (sort !== "dataDeIncorporacao" && sort !== "-dataDeIncorporacao") {
+            return res.status(400).json({ error: "Tipo de sort inválido. Selecionar 'dataDeIncorporacao' ou '-dataDeIncorporacao'." });
+        }
+
+        const dados = agentesRepository.listarDataDeIncorporacao(sort)
+
+        return res.status(200).json(dados)
+    }
+
     const dados = agentesRepository.encontrarAgentes();
 
     res.status(200).json(dados);
@@ -84,7 +106,7 @@ function patchAgente(req, res) {
         return res.status(400).json({ error: "Pelo menos um campo deve ser fornecido." });
     }
 
-    if (!isValidDate(dataDeIncorporacao)) {
+    if (dataDeIncorporacao && !isValidDate(dataDeIncorporacao)) {
         return res.status(400).json({ error: "Data de Incorporação inválida ou no futuro." });
     }
 
