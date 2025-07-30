@@ -26,7 +26,7 @@ function getAllAgentes(req, res) {
 
     if (cargo) {
         if (cargo !== "inspetor" && cargo !== "delegado") {
-            return res.status(400).json(errorHandler.handleError(400, "Cargo Invalido", "cargoInvalido", "Tipo de cargo inválido. Selecionar 'inspetor' ou 'delegado"));
+            return res.status(400).json(errorHandler.handleError(400, "Cargo Inválido", "cargoInvalido", "Tipo de cargo inválido. Selecionar 'inspetor' ou 'delegado'."));
         }
 
         const dados = agentesRepository.listarAgentesPorCargo(cargo);
@@ -79,7 +79,11 @@ function postAgente(req, res) {
 
 function putAgente(req, res) {
     const { id } = req.params;
-    const { nome, dataDeIncorporacao, cargo } = req.body;
+    const { id: idBody, nome, dataDeIncorporacao, cargo } = req.body;
+
+    if(idBody && idBody !== id) {
+        return res.status(400).json(errorHandler.handleError(400, "Alteração de ID não permitida", "idAlterado", "O campo 'id' não pode ser alterado."));
+    }
 
     if(!nome || !dataDeIncorporacao || !cargo) {
         return res.status(400).json(errorHandler.handleError(400, "Campos Obrigatórios", "camposObrigatorios", "Todos os campos são obrigatórios."));
@@ -101,7 +105,11 @@ function putAgente(req, res) {
 
 function patchAgente(req, res) {
     const { id } = req.params;
-    const { nome, dataDeIncorporacao, cargo } = req.body;
+    const { id: idBody, nome, dataDeIncorporacao, cargo } = req.body;
+
+    if(idBody && idBody !== id) {
+        return res.status(400).json(errorHandler.handleError(400, "Alteração de ID não permitida", "idAlterado", "O campo 'id' não pode ser alterado."));
+    }
     
     if(!nome && !dataDeIncorporacao && !cargo) {
         return res.status(400).json(errorHandler.handleError(400, "Um Campo Obrigatório", "camposObrigatorios", "Pelo menos um campo deve ser fornecido."));

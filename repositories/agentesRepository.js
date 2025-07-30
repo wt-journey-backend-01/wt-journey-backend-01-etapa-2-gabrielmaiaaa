@@ -75,8 +75,9 @@ function listarAgentesPorCargo(cargo) {
 }
 
 function listarDataDeIncorporacao(sort) {
+    const agentesTemp = [...agentes];
     if (sort === "dataDeIncorporacao") {
-        const dados = agentes.sort((agente1, agente2) => {
+        const dados = agentesTemp.sort((agente1, agente2) => {
             const data1 = new Date(agente1.dataDeIncorporacao);
             const data2 = new Date(agente2.dataDeIncorporacao);
             return data1.getTime() - data2.getTime();
@@ -85,7 +86,7 @@ function listarDataDeIncorporacao(sort) {
         return dados;
     }
 
-    const dados = agentes.sort((agente1, agente2) => {
+    const dados = agentesTemp.sort((agente1, agente2) => {
         const data1 = new Date(agente1.dataDeIncorporacao);
         const data2 = new Date(agente2.dataDeIncorporacao);
         return data2.getTime() - data1.getTime();

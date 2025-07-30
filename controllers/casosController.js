@@ -72,7 +72,11 @@ function postCaso(req, res) {
 
 function putCaso(req, res) {
     const { id } = req.params;
-    const { titulo, descricao, status, agente_id } = req.body;
+    const { id: idBody, titulo, descricao, status, agente_id } = req.body;
+
+    if(idBody && idBody !== id) {
+        return res.status(400).json(errorHandler.handleError(400, "Alteração de ID não permitida", "idAlterado", "O campo 'id' não pode ser alterado."));
+    }
 
     if (!titulo || !descricao || !status || !agente_id) {
         return res.status(400).json(errorHandler.handleError(400, "Todos os campos são obrigatórios", "camposObrigatorios", "Todos os campos são obrigatórios."));
@@ -98,7 +102,11 @@ function putCaso(req, res) {
 
 function patchCaso(req, res) {
     const { id } = req.params;
-    const { titulo, descricao, status, agente_id } = req.body;
+    const { id: idBody, titulo, descricao, status, agente_id } = req.body;
+
+    if(idBody && idBody !== id) {
+        return res.status(400).json(errorHandler.handleError(400, "Alteração de ID não permitida", "idAlterado", "O campo 'id' não pode ser alterado."));
+    }
 
     if (!titulo && !descricao && !status && !agente_id) {
         return res.status(400).json(errorHandler.handleError(400, "Um Campo Obrigatório", "camposObrigatorios", "Pelo menos um campo deve ser fornecido."));
@@ -153,7 +161,7 @@ function getCasosPorString(req, res) {
     const { q } = req.query;
 
     if(!q) {
-        return res.status(400).json(errorHandler.handleError(400, "Parâmetro não encontrado", "parametroNaoEncontrado", "Informe uma palavra para buscar."));
+        return res.status(400).json(errorHandler.handleError(400, "Parâmetro não encontrado", "parametroNaoEncontrado", "Verifique se está utilizando o parametro 'q' e se colocou alguma palavra para buscar."));
     }
 
     const dados = casosRepository.encontrarCasoPorString(q);

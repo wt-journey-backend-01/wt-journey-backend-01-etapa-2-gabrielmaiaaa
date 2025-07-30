@@ -20,7 +20,7 @@ function findById(id) {
     const caso = casos.find((caso) => caso.id === id);
 
     if (!caso) {
-        return false;
+        return null;
     }
 
     return caso;

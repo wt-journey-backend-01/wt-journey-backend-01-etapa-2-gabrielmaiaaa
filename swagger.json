@@ -211,6 +211,9 @@
                                         },
                                         "dataInvalida": {
                                             "message": "Data de Incorporação inválida ou no futuro."
+                                        },
+                                        "idAlterado": {
+                                            "message": "Alteração de ID não permitida. O campo 'id' não pode ser alterado."
                                         }
                                     }
                                 }
@@ -301,6 +304,9 @@
                                         },
                                         "dataInvalida": {
                                             "message": "Data de Incorporação inválida ou no futuro."
+                                        },
+                                        "idAlterado": {
+                                            "message": "Alteração de ID não permitida. O campo 'id' não pode ser alterado."
                                         }
                                     }
                                 }
@@ -625,6 +631,9 @@
                                         },
                                         "statusInvalido": {
                                             "message": "Tipo de status inválido. Selecionar 'aberto' ou 'solucionado'."
+                                        },
+                                        "idAlterado": {
+                                            "message": "Alteração de ID não permitida. O campo 'id' não pode ser alterado."
                                         }
                                     }
                                 }
@@ -701,6 +710,9 @@
                                         },
                                         "statusInvalido": {
                                             "message": "Tipo de status inválido. Selecionar 'aberto' ou 'solucionado'."
+                                        },
+                                        "idAlterado": {
+                                            "message": "Alteração de ID não permitida. O campo 'id' não pode ser alterado."
                                         }
                                     }
                                 }
@@ -946,7 +958,7 @@
                                 "schema": {
                                     "type": "object",
                                     "example": {
-                                        "message": "Paramêtro não encontrado. Informe uma palavra para buscar."
+                                        "message": "Verifique se está utilizando o parametro 'q' e se colocou alguma palavra para buscar."
                                     }
                                 }
                             }
