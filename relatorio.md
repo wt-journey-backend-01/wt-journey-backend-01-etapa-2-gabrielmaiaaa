@@ -1,35 +1,35 @@
 <sup>Esse é um feedback gerado por IA, ele pode conter erros.</sup>
 
-Você tem 7 créditos restantes para usar o sistema de feedback AI.
+Você tem 6 créditos restantes para usar o sistema de feedback AI.
 
 # Feedback para gabrielmaiaaa:
 
 Nota final: **95.6/100**
 
-# Feedback para Gabriel Maia 🚓✨
+# Feedback para gabrielmaiaaa 🚨👮‍♂️
 
-Olá, Gabriel! Primeiro, parabéns pelo empenho e pelo excelente trabalho! 🎉 Sua API para o Departamento de Polícia está muito bem estruturada e organizada. Dá para ver que você entendeu muito bem os conceitos de REST, Express.js e a arquitetura MVC com rotas, controllers e repositories separados. Isso é fundamental para construir projetos escaláveis e fáceis de manter. 👏
-
----
-
-## O que você mandou muito bem! 👏
-
-- Seus endpoints básicos de `/agentes` e `/casos` estão todos implementados, com todos os métodos HTTP (GET, POST, PUT, PATCH, DELETE) funcionando direitinho.
-- A validação dos dados está bem feita, com checks para campos obrigatórios e formatos corretos, como a data de incorporação dos agentes e o status dos casos.
-- Você usou o UUID para gerar IDs únicos, o que é ótimo para evitar conflitos.
-- O tratamento de erros está presente, com respostas 400 e 404 customizadas para vários cenários.
-- A organização do projeto está alinhada com a arquitetura MVC, o que facilita a leitura e manutenção do código.
-- Conseguiu implementar com sucesso os filtros por status e por agente nos casos, além da filtragem por cargo e ordenação na listagem de agentes — isso é bônus e mostra que você foi além do básico! 🌟
+Olá, Gabriel! Primeiro, parabéns pelo empenho e pela entrega super consistente da sua API para o Departamento de Polícia! 🎉 Você conseguiu implementar todos os endpoints principais para os recursos `/agentes` e `/casos`, com as operações completas de CRUD, validações e tratamento de erros. Isso já é um baita avanço! 👏
 
 ---
 
-## Pontos para aprimorar para chegar ao próximo nível 🚀
+## O que está muito bem feito 👍
 
-### 1. **Não permitir alteração do ID nos métodos PUT**
+- Sua organização de arquivos está alinhada com o que esperamos: você tem pastas separadas para **routes**, **controllers**, **repositories** e **utils**. Isso facilita muito a manutenção e escalabilidade do código.
+- Os endpoints estão implementados para todos os métodos HTTP solicitados (`GET`, `POST`, `PUT`, `PATCH`, `DELETE`) tanto para agentes quanto para casos.
+- Sua validação de campos obrigatórios e tipos (como data e status) está muito bem feita, com mensagens de erro personalizadas e status codes corretos (400, 404).
+- Você usou o UUID para gerar IDs únicos, o que é uma boa prática.
+- Implementou filtros por cargo para agentes e por status e agente para casos, cumprindo os bônus de filtragem simples.
+- O uso do Swagger para documentação está configurado, o que é um diferencial bacana!
+  
+---
 
-Ao analisar seu repositório, percebi que nos métodos de atualização completa (PUT) para agentes e casos, o campo `id` pode ser alterado, o que não deveria acontecer. O ID é o identificador único do recurso e deve ser imutável após a criação.
+## Pontos importantes para melhorar e entender melhor 🔍
 
-Por exemplo, no seu `agentesRepository.js`, na função `atualizarAgente`:
+### 1. **Você está permitindo a alteração do ID nos métodos PUT!**
+
+Ao analisar os métodos `putAgente` e `putCaso`, percebi que você está recebendo o objeto completo no corpo da requisição e substituindo o recurso inteiro, mas sem impedir que o campo `id` seja alterado, o que não é desejado.
+
+Por exemplo, no seu `agentesRepository.js`:
 
 ```js
 function atualizarAgente(id, agenteAtualizado) {
@@ -45,243 +45,172 @@ function atualizarAgente(id, agenteAtualizado) {
 }
 ```
 
-Aqui você preserva o id original, o que está correto. Mas no controller, ao receber o payload no PUT, não está impedindo que o usuário envie um `id` diferente dentro do corpo da requisição, e isso pode causar confusão.
+Aqui você preserva o `id` original, o que é ótimo. Mas no controller (`agentesController.js`), você está criando o objeto `agenteAtualizado` diretamente a partir do corpo, que pode conter um `id` diferente, e passando para o repositório. Isso pode gerar inconsistência.
 
-**Sugestão:** No controller `putAgente` e `putCaso`, ao receber o corpo da requisição, ignore qualquer `id` enviado pelo usuário. Você pode fazer isso retirando o `id` do objeto antes de passar para o repository, ou explicitamente removendo o `id` do objeto recebido:
+**O problema maior** é que, se o cliente enviar um campo `id` diferente no corpo da requisição, ele será ignorado no repositório, mas o ideal é validar e rejeitar essa alteração no controller, retornando um erro 400 para deixar claro que o ID não pode ser alterado.
+
+### Como corrigir? 
+
+No seu controller, antes de chamar o repositório, faça uma checagem para garantir que o `id` não está sendo alterado:
 
 ```js
 function putAgente(req, res) {
     const { id } = req.params;
-    const { nome, dataDeIncorporacao, cargo, id: idBody } = req.body;
+    const { id: idBody, nome, dataDeIncorporacao, cargo } = req.body;
 
-    if (idBody && idBody !== id) {
-        return res.status(400).json({ error: "O ID não pode ser alterado." });
+    if(idBody && idBody !== id) {
+        return res.status(400).json(errorHandler.handleError(400, "Alteração de ID não permitida", "idAlterado", "O campo 'id' não pode ser alterado."));
     }
 
-    // restante da validação e atualização...
+    // resto do código...
 }
 ```
 
-Isso evita que alguém tente alterar o `id` via PUT.
-
-**Por que isso é importante?**  
-O ID é a "chave primária" do recurso. Permitir que ele seja alterado pode quebrar a integridade dos dados e causar inconsistências.
+Faça algo similar para o `putCaso`.
 
 ---
 
-### 2. **Falhas nos testes bônus de endpoints avançados**
+### 2. **O mesmo vale para o PATCH — não permita alteração do ID**
 
-Você implementou alguns filtros e ordenações, mas outros ainda não passaram, como:
-
-- Endpoint para buscar o agente responsável por um caso (`GET /casos/:casos_id/agente`)
-- Endpoint para buscar casos por palavras-chave no título ou descrição
-- Ordenação por data de incorporação dos agentes em ordem crescente e decrescente
-- Mensagens de erro customizadas para argumentos inválidos
-
-Vamos olhar um ponto importante para o endpoint do agente do caso, por exemplo, no `casosController.js`:
-
-```js
-function getAgenteDoCaso(req, res) {
-    const { casos_id } = req.params;
-    console.log(casos_id)
-
-    if (!casosRepository.findById(casos_id)) {
-        return res.status(404).json({ message: "ID do caso informado não encontrado" });
-    }
-
-    const dados = casosRepository.encontrarAgenteDoCaso(casos_id);
-
-    if (!dados) {
-        return res.status(404).json({ message: "Agente não encontrado. Verifique se o agente está registrado no sistema." });
-    }
-
-    res.status(200).json(dados)
-}
-```
-
-**Possível causa raiz do problema:**  
-No arquivo de rotas `casosRoutes.js`, você definiu a rota assim:
-
-```js
-router.get("/casos/:casos_id/agente", casosController.getAgenteDoCaso)
-```
-
-O nome do parâmetro está `casos_id` (plural), mas no restante do código e nos testes, é comum usar `caso_id` (singular). Essa pequena discrepância pode estar causando falha na captura do parâmetro e, consequentemente, no funcionamento do endpoint.
-
-**Sugestão:** Padronize o nome do parâmetro para `caso_id` em todas as partes:
-
-```js
-// Em casosRoutes.js
-router.get("/casos/:caso_id/agente", casosController.getAgenteDoCaso)
-
-// Em casosController.js
-function getAgenteDoCaso(req, res) {
-    const { caso_id } = req.params;
-
-    if (!casosRepository.findById(caso_id)) {
-        return res.status(404).json({ message: "ID do caso informado não encontrado" });
-    }
-
-    const dados = casosRepository.encontrarAgenteDoCaso(caso_id);
-
-    if (!dados) {
-        return res.status(404).json({ message: "Agente não encontrado. Verifique se o agente está registrado no sistema." });
-    }
-
-    res.status(200).json(dados)
-}
-```
-
-Essa padronização é fundamental para evitar bugs sutis.
+No método `patchAgente` e `patchCaso`, também é possível alterar o `id` se o cliente enviar esse campo no corpo. Você deve bloquear isso da mesma forma, retornando erro 400.
 
 ---
 
-### 3. **Filtro por palavras-chave nos casos (`getCasosPorString`)**
+### 3. **Endpoint de filtragem de agente por data de incorporação com sorting não está implementado**
 
-No `casosController.js`, sua função está assim:
+Você fez um ótimo trabalho implementando filtros simples, mas os testes indicam que o filtro e ordenação de agentes por data de incorporação (ascendente e descendente) não está funcionando como esperado.
+
+No seu `agentesController.js`, no método `getAllAgentes`, você verifica o parâmetro `sort` e chama `listarDataDeIncorporacao(sort)` do repositório, o que é correto.
+
+Porém, no seu `agentesRepository.js`, o método `listarDataDeIncorporacao` está modificando o array original `agentes` com o `.sort()` direto, o que pode causar efeitos colaterais indesejados, pois `.sort()` altera o array original.
+
+**Solução:** Clone o array antes de ordenar, para não alterar o array original:
 
 ```js
-function getCasosPorString(req, res) {
-    const { q } = req.query;
-
-    if(!q) {
-        return res.status(400).json({ error: "Paramêtro não encontrado. Informe uma palavra para buscar." });
+function listarDataDeIncorporacao(sort) {
+    const agentesClone = [...agentes];
+    if (sort === "dataDeIncorporacao") {
+        return agentesClone.sort((a, b) => new Date(a.dataDeIncorporacao) - new Date(b.dataDeIncorporacao));
     }
-
-    const dados = casosRepository.encontrarCasoPorString(q);
-
-    if (!dados || dados.length === 0) {
-        return res.status(404).json({ message: "Nenhum caso encontrado com a palavra fornecida." });
-    }
-
-    res.status(200).json(dados);
+    return agentesClone.sort((a, b) => new Date(b.dataDeIncorporacao) - new Date(a.dataDeIncorporacao));
 }
 ```
 
-E no repository:
+Isso evita bugs sutis e garante que a ordenação funcione sempre corretamente.
 
-```js
-function encontrarCasoPorString(search) {
-    const dados = casos.filter((caso) => 
-        caso.titulo.toLowerCase().includes(search.toLowerCase()) ||
-        caso.descricao.toLowerCase().includes(search.toLowerCase())
-    );
+---
 
-    return dados;
-}
-```
+### 4. **Endpoint de busca de agente responsável por caso não está funcionando corretamente**
 
-Está correto, mas é importante garantir que a rota `/casos/search` esteja registrada **antes** do `/casos/:id`, para que o Express não confunda a rota de busca com um ID de caso.
+Você implementou o endpoint `/casos/:caso_id/agente` no `casosRoutes.js` e no controller `getAgenteDoCaso`, que é ótimo!
 
-No seu `casosRoutes.js`, você fez isso corretamente:
+Porém, no repositório, a função `encontrarAgenteDoCaso` retorna `false` se não encontrar o caso, e o controller trata isso corretamente.
+
+A questão é que seu método `findById` no repositório de casos retorna `false` se não encontrar, mas o nome sugere que deveria retornar `null` ou `undefined` para melhor semântica. Isso não é um erro grave, mas uma boa prática para evitar confusões.
+
+Além disso, verifique se o agente realmente existe para o caso. Se o agente não existir (por exemplo, foi deletado), seu código já retorna 404, o que está correto.
+
+---
+
+### 5. **Busca de casos por palavras-chave (query string `q`)**
+
+Você implementou o método `getCasosPorString` no controller e o `encontrarCasoPorString` no repositório, que fazem a busca por título e descrição, o que é ótimo!
+
+No entanto, o teste indica que esse endpoint não está passando. Ao analisar, percebi que no arquivo `casosRoutes.js` você colocou a rota assim:
 
 ```js
 router.get("/casos/search", casosController.getCasosPorString)
-router.get('/casos', casosController.getAllCasos)
-router.get('/casos/:id', casosController.getCaso)
 ```
 
-Mas vale a pena ficar atento a essa ordem.
-
----
-
-### 4. **Validação de dados e mensagens de erro customizadas**
-
-Você fez um bom trabalho com mensagens de erro claras, mas algumas mensagens podem ser aprimoradas para ficarem mais consistentes e informativas, especialmente para os filtros e parâmetros inválidos.
-
-Por exemplo, no `agentesController.js`:
+A rota está correta, mas o problema pode estar no nome do parâmetro da query string. Você espera `q` no controller:
 
 ```js
-if (cargo !== "inspetor" && cargo !== "delegado") {
-    return res.status(400).json({ error: "Tipo de cargo inválido. Selecionar 'inspetor' ou 'delegado'." });
-}
+const { q } = req.query;
 ```
 
-Esse tipo de mensagem é ótima! Tente manter esse padrão para todos os erros relacionados a parâmetros inválidos, para dar uma experiência mais amigável para quem consumir sua API.
+Certifique-se de que o cliente está enviando `?q=...` e que a rota está sendo chamada corretamente.
 
 ---
 
-### 5. **Duplicação de IDs nos agentes**
+### 6. **Mensagens de erro customizadas para argumentos inválidos**
 
-No seu `agentesRepository.js`, notei que todos os agentes de exemplo têm o mesmo `id`:
+Você fez um bom trabalho criando mensagens customizadas no `errorHandler.js` e usando-as nos controllers.
+
+Porém, algumas mensagens de erro, especialmente para parâmetros inválidos em agentes, parecem não estar sendo retornadas nos formatos esperados pelos testes bônus.
+
+O que pode estar acontecendo é que em algumas validações (por exemplo, cargo inválido em agentes), a mensagem está faltando uma aspa no final:
 
 ```js
-const agentes = [   
-    {
-        "id": "401bccf5-cf9e-489d-8412-446cd169a0f1",
-        "nome": "Rommel Carneiro",
-        "dataDeIncorporacao": "1992/10/04",
-        "cargo": "delegado"
-    }, 
-    {
-        "id": "401bccf5-cf9e-489d-8412-446cd169a0f1",
-        "nome": "Rommel Carneiro",
-        "dataDeIncorporacao": "1994/10/04",
-        "cargo": "delegado"
-    }, 
-    {
-        "id": "401bccf5-cf9e-489d-8412-446cd169a0f1",
-        "nome": "Rommel Carneiro",
-        "dataDeIncorporacao": "1990/10/04",
-        "cargo": "delegado"
-    }, 
-]
+return res.status(400).json(errorHandler.handleError(400, "Cargo Invalido", "cargoInvalido", "Tipo de cargo inválido. Selecionar 'inspetor' ou 'delegado"));
 ```
 
-Isso pode causar problemas de busca e atualização, pois o `find` e `findIndex` sempre vão achar o primeiro com esse ID, e os outros ficarão inacessíveis.
+Note que a string está sem a aspa fechando, o que pode causar erro de sintaxe ou comportamento inesperado.
 
-**Sugestão:** Use IDs únicos para cada agente no array inicial, mesmo que fictícios, para evitar conflitos.
+Corrija para:
 
----
-
-### 6. **Formato da data de incorporação**
-
-Você usa o formato `"1992/10/04"` para a data de incorporação, que é um pouco incomum (normalmente usamos `"1992-10-04"` no ISO 8601).
-
-Além disso, na função `isValidDate`, você usa regex para validar o formato `YYYY-MM-DD`, mas seus dados iniciais têm `/` como separador.
-
-Isso pode gerar inconsistência na validação.
-
-**Sugestão:** Padronize o formato das datas para `"YYYY-MM-DD"` em todos os lugares (dados iniciais e validação).
+```js
+return res.status(400).json(errorHandler.handleError(400, "Cargo Inválido", "cargoInvalido", "Tipo de cargo inválido. Selecionar 'inspetor' ou 'delegado'."));
+```
 
 ---
 
-## Recursos para você aprofundar e melhorar ainda mais! 📚✨
+### 7. **Pequena melhoria na organização das rotas no server.js**
 
-- Para garantir que o ID não seja alterado e entender melhor o fluxo de atualização em APIs REST:  
-  https://youtu.be/RSZHvQomeKE (Seção sobre métodos HTTP e status codes)
+No seu `server.js`, você fez:
 
-- Para entender melhor o roteamento e como o Express trata parâmetros e ordem de rotas:  
+```js
+app.use(agentesRouter);
+app.use(casosRouter);
+```
+
+Porém, o Express espera que você defina o caminho base para cada router, assim:
+
+```js
+app.use('/agentes', agentesRouter);
+app.use('/casos', casosRouter);
+```
+
+Ou, como você já definiu as rotas completas dentro dos arquivos de rota (ex: `/agentes`, `/casos`), o seu código funciona, mas é mais comum e organizado usar o prefixo no `app.use`.
+
+Não é um erro, mas fica a dica para deixar o código mais expressivo e evitar rotas repetidas.
+
+---
+
+## Recursos que recomendo para você aprimorar ainda mais seu código 🚀
+
+- Para entender melhor como proteger campos que não devem ser alterados (como `id`) e validar payloads:  
+  https://youtu.be/yNDCRAz7CM8?si=Lh5u3j27j_a4w3A_  
+  (Validação de dados em APIs Node.js/Express)
+
+- Para entender a manipulação correta de arrays e evitar efeitos colaterais com `.sort()`:  
+  https://youtu.be/glSgUKA5LjE?si=t9G2NsC8InYAU9cI  
+  (Métodos de array em JavaScript)
+
+- Para aprofundar no uso correto do Express Router e organização das rotas:  
   https://expressjs.com/pt-br/guide/routing.html
 
-- Sobre validação de dados e tratamento de erros com mensagens customizadas:  
+- Para entender melhor tratamento de erros e status codes HTTP:  
   https://developer.mozilla.org/pt-BR/docs/Web/HTTP/Status/400  
   https://developer.mozilla.org/pt-BR/docs/Web/HTTP/Status/404
 
-- Para manipulação de arrays e garantir que busca, update e delete funcionem corretamente:  
-  https://youtu.be/glSgUKA5LjE?si=t9G2NsC8InYAU9cI
+---
 
-- Para entender arquitetura MVC e organização do projeto Node.js com Express:  
-  https://youtu.be/bGN_xNc4A1k?si=Nj38J_8RpgsdQ-QH
+## Resumo rápido dos principais pontos para focar:
+
+- ❌ Bloquear alteração do campo `id` nos métodos PUT e PATCH, retornando erro 400 se tentarem alterar.
+- 🛠️ Corrigir o método `listarDataDeIncorporacao` para ordenar uma cópia do array, evitando modificar o array original.
+- 🔍 Revisar o endpoint de busca por palavra-chave para garantir que o parâmetro `q` está sendo recebido e tratado corretamente.
+- 📝 Ajustar mensagens de erro para evitar erros de sintaxe (ex: aspas faltando).
+- ⚙️ Considerar usar prefixos nas rotas no `server.js` para melhor organização.
+- 📚 Rever as mensagens customizadas de erro para garantir que estão completas e consistentes.
 
 ---
 
-## Resumo dos principais pontos para focar:
+Gabriel, seu projeto está muito bem estruturado e você já domina muitos conceitos importantes! 🚓👊 Com esses ajustes finos, sua API vai ficar ainda mais robusta e profissional. Continue praticando, revisando seu código e buscando entender por que cada detalhe importa. Isso faz toda a diferença no seu crescimento como dev!
 
-- 🚫 **Impedir alteração do ID nos métodos PUT** para agentes e casos (ID deve ser imutável)
-- 🔄 **Padronizar nome do parâmetro `caso_id`** no endpoint `/casos/:caso_id/agente` para evitar bugs
-- 🗂️ **Corrigir IDs duplicados no array inicial de agentes** para evitar conflitos de busca e atualização
-- 📅 **Padronizar o formato das datas para `YYYY-MM-DD`** e ajustar validação para esse formato
-- 💬 **Aprimorar mensagens de erro customizadas** para todos os parâmetros inválidos
-- ⚠️ **Garantir que a ordem das rotas no Express esteja correta**, especialmente para rotas com parâmetros dinâmicos e rotas fixas (ex: `/casos/search` antes de `/casos/:id`)
+Se precisar de ajuda para implementar algum desses pontos, me chama aqui que a gente resolve juntos! 😉
 
----
-
-Gabriel, sua base está excelente! Com esses ajustes, sua API vai ficar ainda mais robusta, confiável e profissional. Continue assim, com essa dedicação e atenção aos detalhes! 🚀💙
-
-Se precisar de ajuda para implementar alguma dessas sugestões, só chamar! Estou aqui para te ajudar nessa jornada. 😉
-
-Abraço forte e bons códigos! 👊✨
+Um abraço e até a próxima! 🚀✨
 
 > Caso queira tirar uma dúvida específica, entre em contato com o Chapter no nosso [discord](https://discord.gg/DryuHVnz).
 
