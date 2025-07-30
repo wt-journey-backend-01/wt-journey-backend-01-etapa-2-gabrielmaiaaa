@@ -975,9 +975,6 @@
                 "type": "object",
                 "required": ["nome", "dataDeIncorporacao", "cargo"],
                 "properties": {
-                    "id": {
-                        "type": "string"
-                    },
                     "nome": {
                         "type": "string"
                     },
@@ -994,9 +991,6 @@
                 "type": "object",
                 "required": ["titulo", "descricao", "status", "agente_id"],
                 "properties": {
-                    "id": {
-                        "type": "string"
-                    },
                     "titulo": {
                         "type": "string"
                     },

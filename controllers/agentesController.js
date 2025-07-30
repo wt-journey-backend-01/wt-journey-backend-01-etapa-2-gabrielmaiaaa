@@ -1,4 +1,5 @@
 const agentesRepository = require("../repositories/agentesRepository")
+const errorHandler = require("../utils/errorHandler");
 
 function isValidDate(dateString) {
     const data = new Date(dateString);
@@ -25,7 +26,7 @@ function getAllAgentes(req, res) {
 
     if (cargo) {
         if (cargo !== "inspetor" && cargo !== "delegado") {
-            return res.status(400).json({ error: "Tipo de cargo inválido. Selecionar 'inspetor' ou 'delegado'." });
+            return res.status(400).json(errorHandler.handleError(400, "Cargo Invalido", "cargoInvalido", "Tipo de cargo inválido. Selecionar 'inspetor' ou 'delegado"));
         }
 
         const dados = agentesRepository.listarAgentesPorCargo(cargo);
@@ -35,7 +36,7 @@ function getAllAgentes(req, res) {
 
     if (sort) {
         if (sort !== "dataDeIncorporacao" && sort !== "-dataDeIncorporacao") {
-            return res.status(400).json({ error: "Tipo de sort inválido. Selecionar 'dataDeIncorporacao' ou '-dataDeIncorporacao'." });
+            return res.status(400).json(errorHandler.handleError(400, "Tipo de Sort Inválido", "tipoSortInvalido", "Tipo de sort inválido. Selecionar 'dataDeIncorporacao' ou '-dataDeIncorporacao'."));
         }
 
         const dados = agentesRepository.listarDataDeIncorporacao(sort)
@@ -53,9 +54,9 @@ function getAgente(req, res) {
     const dados = agentesRepository.encontrarAgenteById(id);
 
     if (!dados) {
-        return res.status(404).json({ error: "Agente não encontrado." });
-    } 
-    
+        return res.status(404).json(errorHandler.handleError(404, "Agente não encontrado", "agenteNaoEncontrado", "Agente não foi encontrado com esse id."));
+    }
+
     res.status(200).json(dados);
 }
 
@@ -63,11 +64,11 @@ function postAgente(req, res) {
     const { nome, dataDeIncorporacao, cargo } = req.body;
 
     if(!nome || !dataDeIncorporacao || !cargo) {
-        return res.status(400).json({ error: "Todos os campos são obrigatórios." });
+        return res.status(400).json(errorHandler.handleError(400, "Campos Obrigatórios", "camposObrigatorios", "Todos os campos são obrigatórios."));
     }
 
     if (!isValidDate(dataDeIncorporacao)) {
-        return res.status(400).json({ error: "Data de Incorporação inválida ou no futuro." });
+        return res.status(400).json(errorHandler.handleError(400, "Data Inválida", "dataInvalida", "Data de Incorporação inválida ou no futuro."));
     }
 
     const novoAgente = { nome, dataDeIncorporacao, cargo };
@@ -81,18 +82,18 @@ function putAgente(req, res) {
     const { nome, dataDeIncorporacao, cargo } = req.body;
 
     if(!nome || !dataDeIncorporacao || !cargo) {
-        return res.status(400).json({ error: "Todos os campos são obrigatórios." });
+        return res.status(400).json(errorHandler.handleError(400, "Campos Obrigatórios", "camposObrigatorios", "Todos os campos são obrigatórios."));
     }
 
     if (!isValidDate(dataDeIncorporacao)) {
-        return res.status(400).json({ error: "Data de Incorporação inválida ou no futuro." });
+        return res.status(400).json(errorHandler.handleError(400, "Data Inválida", "dataInvalida", "Data de Incorporação inválida ou no futuro."));
     }
 
     const agenteAtualizado = { nome, dataDeIncorporacao, cargo };
     const dados = agentesRepository.atualizarAgente(id, agenteAtualizado);
 
     if (!dados) {
-        return res.status(404).json({ error: "Agente não encontrado." });
+        return res.status(404).json(errorHandler.handleError(404, "Agente não encontrado", "agenteNaoEncontrado", "Agente não foi encontrado com esse id."));
     } 
 
     res.status(200).json(dados);
@@ -103,18 +104,18 @@ function patchAgente(req, res) {
     const { nome, dataDeIncorporacao, cargo } = req.body;
     
     if(!nome && !dataDeIncorporacao && !cargo) {
-        return res.status(400).json({ error: "Pelo menos um campo deve ser fornecido." });
+        return res.status(400).json(errorHandler.handleError(400, "Um Campo Obrigatório", "camposObrigatorios", "Pelo menos um campo deve ser fornecido."));
     }
 
     if (dataDeIncorporacao && !isValidDate(dataDeIncorporacao)) {
-        return res.status(400).json({ error: "Data de Incorporação inválida ou no futuro." });
+        return res.status(400).json(errorHandler.handleError(400, "Data Inválida", "dataInvalida", "Data de Incorporação inválida ou no futuro."));
     }
 
     const agenteAtualizado = { nome, dataDeIncorporacao, cargo };
     const dados = agentesRepository.atualizarParcialAgente(id, agenteAtualizado);
 
     if (!dados) {
-        return res.status(404).json({ error: "Agente não encontrado." });
+        return res.status(404).json(errorHandler.handleError(404, "Agente não encontrado", "agenteNaoEncontrado", "Agente não foi encontrado com esse id."));
     } 
     
     res.status(200).json(dados);
@@ -125,7 +126,7 @@ function deleteAgente(req, res) {
     const status = agentesRepository.apagarAgente(id);
 
     if (!status) {
-        return res.status(404).json({ error: "Agente não encontrado." });
+        return res.status(404).json(errorHandler.handleError(404, "Agente não encontrado", "agenteNaoEncontrado", "Agente não foi encontrado com esse id."));
     } 
     
     res.status(204).send();
