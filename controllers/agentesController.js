@@ -53,7 +53,7 @@ function getAgente(req, res) {
     const { id } = req.params;
     const dados = agentesRepository.encontrarAgenteById(id);
 
-    if (!dados) {
+    if (!dados || dados.length === 0) {
         return res.status(404).json(errorHandler.handleError(404, "Agente não encontrado", "agenteNaoEncontrado", "Agente não foi encontrado com esse id."));
     }
 
@@ -96,7 +96,7 @@ function putAgente(req, res) {
     const agenteAtualizado = { nome, dataDeIncorporacao, cargo };
     const dados = agentesRepository.atualizarAgente(id, agenteAtualizado);
 
-    if (!dados) {
+    if (!dados || dados.length === 0) {
         return res.status(404).json(errorHandler.handleError(404, "Agente não encontrado", "agenteNaoEncontrado", "Agente não foi encontrado com esse id."));
     } 
 
@@ -122,7 +122,7 @@ function patchAgente(req, res) {
     const agenteAtualizado = { nome, dataDeIncorporacao, cargo };
     const dados = agentesRepository.atualizarParcialAgente(id, agenteAtualizado);
 
-    if (!dados) {
+    if (!dados || dados.length === 0) {
         return res.status(404).json(errorHandler.handleError(404, "Agente não encontrado", "agenteNaoEncontrado", "Agente não foi encontrado com esse id."));
     } 
     

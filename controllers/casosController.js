@@ -2,42 +2,42 @@ const casosRepository = require("../repositories/casosRepository");
 const agentesRepository = require("../repositories/agentesRepository");
 const errorHandler = require("../utils/errorHandler");
 
-function listarPorAgente(agente_id) {
+function listarPorAgente(res, agente_id) {
     if (!agentesRepository.encontrarAgenteById(agente_id)) {
         return res.status(404).json(errorHandler.handleError(404, "ID do agente informado não encontrado no sistema.", "agenteNaoEncontrado", "ID do agente informado não encontrado no sistema."));
     }
 
     const dados = casosRepository.listarCasosPorAgente(agente_id);
 
-    if (!dados) {
+    if (!dados || dados.length === 0) {
         return res.status(404).json(errorHandler.handleError(404, "Caso não encontrado com esse id de agente", "casoNaoEncontrado", "Caso não encontrado com esse id de agente"));
     }
 
     return res.status(200).json(dados);
 }
 
-function listarPorStatus(status) {
+function listarPorStatus(res, status) {
     if (status !== "aberto" && status !== "solucionado") {
         return res.status(400).json(errorHandler.handleError(400, "Tipo de status inválido", "tipoStatusInvalido", "Tipo de status inválido. Selecionar 'aberto' ou 'solucionado'."));
     }
 
     const dados = casosRepository.listarCasosPorStatus(status);
 
-    if (!dados) {
+    if (!dados || dados.length === 0) {
         return res.status(404).json(errorHandler.handleError(404, "Caso não encontrado", "casoNaoEncontrado", "Caso não encontrado com esse status"));
     }
 
     return res.status(200).json(dados);
 }
 
-function listarPorAgenteEStatus(agente_id, status) {
+function listarPorAgenteEStatus(res, agente_id, status) {
     if (!agentesRepository.encontrarAgenteById(agente_id)) {
         return res.status(404).json(errorHandler.handleError(404, "ID do agente informado não encontrado no sistema.", "agenteNaoEncontrado", "ID do agente informado não encontrado no sistema."));
     }
 
     const dados = casosRepository.listarCasosPorAgenteEStatus(agente_id, status);
 
-    if (!dados) {
+    if (!dados || dados.length === 0) {
         return res.status(404).json(errorHandler.handleError(404, "Caso não encontrado", "casoNaoEncontrado", "Caso não encontrado com esse agente e status"));
     }
 
@@ -47,16 +47,16 @@ function listarPorAgenteEStatus(agente_id, status) {
 function getAllCasos(req, res) {
     const { agente_id, status } = req.query;
 
-    if (agente_id) {
-        return listarPorAgente(agente_id);
+    if (agente_id && status) {
+        return listarPorAgenteEStatus(res, agente_id, status);
+    }
+
+    else if (agente_id) {
+        return listarPorAgente(res, agente_id);
     }
 
     else if (status) {
-        return listarPorStatus(status);
-    }
-
-    else if (agente_id && status) {
-        return listarPorAgenteEStatus(agente_id, status);
+        return listarPorStatus(res, status);
     }
 
     const dados = casosRepository.findAll();
@@ -119,7 +119,7 @@ function putCaso(req, res) {
     const casoAtualizado = { titulo, descricao, status, agente_id };
     const dados = casosRepository.atualizarCaso(id, casoAtualizado);
 
-    if (!dados) {
+    if (!dados || dados.length === 0) {
         return res.status(404).json(errorHandler.handleError(404, "Caso não encontrado", "casoNaoEncontrado", "Caso não encontrado."));
     }
 
@@ -149,7 +149,7 @@ function patchCaso(req, res) {
     const casoAtualizado = { titulo, descricao, status, agente_id };
     const dados = casosRepository.atualizarParcialCaso(id, casoAtualizado);
 
-    if (!dados) {
+    if (!dados || dados.length === 0) {
         return res.status(404).json(errorHandler.handleError(404, "Caso não encontrado", "casoNaoEncontrado", "Caso não encontrado."));
     } 
 
@@ -176,7 +176,7 @@ function getAgenteDoCaso(req, res) {
 
     const dados = casosRepository.encontrarAgenteDoCaso(caso_id);
 
-    if (!dados) {
+    if (!dados || dados.length === 0) {
         return res.status(404).json(errorHandler.handleError(404, "Agente não encontrado", "agenteNaoEncontrado", "Agente não encontrado. Verifique se o agente está registrado no sistema."));
     }
 
