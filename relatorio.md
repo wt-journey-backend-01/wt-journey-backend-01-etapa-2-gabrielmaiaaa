@@ -1,207 +1,310 @@
 <sup>Esse é um feedback gerado por IA, ele pode conter erros.</sup>
 
-Você tem 4 créditos restantes para usar o sistema de feedback AI.
+Você tem 3 créditos restantes para usar o sistema de feedback AI.
 
 # Feedback para gabrielmaiaaa:
 
 Nota final: **100.0/100**
 
-# Feedback para você, gabrielmaiaaa! 🚀✨
+Olá, Gabriel! 👋🚀
 
-Olá, Gabriel! Antes de mais nada, parabéns pelo esforço e pela entrega desse projeto tão desafiador! 🎉 Você mandou muito bem implementando toda a estrutura básica da API para o Departamento de Polícia, com todos os endpoints para agentes e casos, além da organização do código em rotas, controladores e repositórios. Isso já é um baita avanço e mostra que você está no caminho certo! 👏
+Primeiramente, parabéns pelo trabalho incrível que você entregou! 🎉 Sua API para o Departamento de Polícia está muito bem estruturada, modularizada e com uma organização clara entre rotas, controllers e repositories — isso é fundamental para projetos que crescem com o tempo. Você também implementou corretamente os métodos HTTP (GET, POST, PUT, PATCH, DELETE) para ambos os recursos `/agentes` e `/casos`, e cuidou muito bem das validações e do tratamento de erros personalizados. Isso demonstra um domínio sólido dos conceitos básicos e intermediários de API REST com Express.js. 👏👏
 
----
-
-## 🎯 O que você acertou com louvor
-
-- **Arquitetura modular**: Você dividiu seu código em `routes`, `controllers` e `repositories` de forma clara e organizada, exatamente como esperado. Isso facilita muito a manutenção e evolução do projeto.
-  
-- **Endpoints completos**: Todos os métodos HTTP principais (GET, POST, PUT, PATCH, DELETE) para `/agentes` e `/casos` estão implementados e funcionais. Excelente!
-  
-- **Validações e tratamento de erros**: Você fez uma validação muito boa dos dados recebidos (como datas, status, campos obrigatórios) e usou códigos HTTP corretos (400, 404, 201, 204 etc.) com mensagens de erro personalizadas. Isso deixa a API muito mais amigável para quem for usar.
-  
-- **Uso de UUIDs**: Ótimo uso do pacote `uuid` para gerar ids únicos, garantindo que seus dados tenham identificadores confiáveis.
-  
-- **Swagger para documentação**: Você incluiu o Swagger para documentar sua API, o que é uma prática profissional fundamental.
-  
-- **Bônus conquistados**: Vi que você implementou filtros por status e agente, busca por palavras-chave nos casos, ordenação dos agentes pela data de incorporação e mensagens de erro customizadas para argumentos inválidos. Isso mostra que você foi além do básico e entregou funcionalidades extras que enriquecem a API — parabéns! 🎖️
+Além disso, você foi além do esperado e conseguiu implementar com sucesso os filtros para casos por status e por agente, o que já é um bônus muito legal! 🌟 Isso mostra que você está confortável para explorar funcionalidades extras e entregar valor a mais para o projeto.
 
 ---
 
-## 🔍 Pontos que merecem sua atenção para melhorar ainda mais
+## Agora, vamos conversar sobre alguns pontos que podem ser melhorados para você atingir a excelência total! 🔍🕵️‍♂️
 
-### 1. Problema no uso do `res` dentro de funções auxiliares no controller de casos
+### 1. Endpoints bônus que faltaram funcionar perfeitamente
 
-No arquivo `controllers/casosController.js`, as funções auxiliares `listarPorAgente`, `listarPorStatus` e `listarPorAgenteEStatus` estão tentando usar o objeto `res` para enviar respostas HTTP, mas esse objeto não está sendo passado para elas. Isso causa um problema fundamental: essas funções não conseguem enviar respostas, o que quebra a lógica do endpoint `getAllCasos`.
+Eu percebi que alguns testes bônus relacionados a filtros e buscas não passaram, e ao analisar seu código, vi que você já criou os endpoints que fazem essas funções, o que é ótimo! Porém, há pequenos detalhes que impactam o funcionamento completo deles.
 
-Veja um exemplo do que está acontecendo:
+#### a) Endpoint para buscar o agente responsável por um caso
+
+Você implementou o endpoint `/casos/:caso_id/agente` na sua rota e no controller:
 
 ```js
-function listarPorAgente(agente_id) {
-    if (!agentesRepository.encontrarAgenteById(agente_id)) {
-        // Aqui 'res' não está definido! Isso vai gerar erro.
-        return res.status(404).json(errorHandler.handleError(404, "ID do agente informado não encontrado no sistema.", "agenteNaoEncontrado", "ID do agente informado não encontrado no sistema."));
+router.get("/casos/:caso_id/agente", casosController.getAgenteDoCaso)
+```
+
+No controller:
+
+```js
+function getAgenteDoCaso(req, res) {
+    const { caso_id } = req.params;
+
+    if (!casosRepository.findById(caso_id)) {
+        return res.status(404).json(errorHandler.handleError(404, "ID do caso informado não encontrado", "casoNaoEncontrado", "ID do caso informado não encontrado."));
     }
-    // ...
+
+    const dados = casosRepository.encontrarAgenteDoCaso(caso_id);
+
+    if (!dados || dados.length === 0) {
+        return res.status(404).json(errorHandler.handleError(404, "Agente não encontrado", "agenteNaoEncontrado", "Agente não encontrado. Verifique se o agente está registrado no sistema."));
+    }
+
+    res.status(200).json(dados)
 }
 ```
 
-**Por quê isso acontece?**
+E no repository:
 
-- Essas funções não recebem `req` e `res` como parâmetros, logo não têm acesso ao objeto `res` para enviar respostas.
-- No endpoint `getAllCasos`, você está tentando retornar o resultado dessas funções, mas elas não retornam um valor, apenas tentam usar `res` diretamente.
+```js
+function encontrarAgenteDoCaso(caso_id) {
+    const idCaso = casos.findIndex((caso) => caso.id === caso_id);
+
+    if(idCaso === -1) {
+        return null
+    }
+
+    const idAgente = casos[idCaso].agente_id;
+    const dados = agentesRepository.encontrarAgenteById(idAgente);
+
+    return dados || null;
+}
+```
+
+**O que pode estar causando o problema?**
+
+No controller, você faz uma verificação:
+
+```js
+if (!dados || dados.length === 0) {
+```
+
+Mas `dados` aqui é um objeto (o agente encontrado), e não um array. Isso significa que a condição `dados.length === 0` não faz sentido e pode causar um comportamento inesperado.
 
 **Como corrigir?**
 
-O ideal é que essas funções recebam `req` e `res` para poderem enviar as respostas diretamente, ou elas devem retornar os dados e o controlador principal (`getAllCasos`) decide como responder.
-
-Por exemplo, você pode alterar as funções para:
+Basta mudar a verificação para apenas:
 
 ```js
-function listarPorAgente(req, res, agente_id) {
-    if (!agentesRepository.encontrarAgenteById(agente_id)) {
-        return res.status(404).json(errorHandler.handleError(404, "ID do agente informado não encontrado no sistema.", "agenteNaoEncontrado", "ID do agente informado não encontrado no sistema."));
-    }
-    const dados = casosRepository.listarCasosPorAgente(agente_id);
-    if (!dados || dados.length === 0) {
-        return res.status(404).json(errorHandler.handleError(404, "Caso não encontrado com esse id de agente", "casoNaoEncontrado", "Caso não encontrado com esse id de agente"));
-    }
-    return res.status(200).json(dados);
+if (!dados) {
+    return res.status(404).json(errorHandler.handleError(404, "Agente não encontrado", "agenteNaoEncontrado", "Agente não encontrado. Verifique se o agente está registrado no sistema."));
 }
+```
 
-function getAllCasos(req, res) {
-    const { agente_id, status } = req.query;
+Assim, você garante que a resposta 404 será enviada apenas quando o agente realmente não for encontrado.
 
-    if (agente_id && status) {
-        return listarPorAgenteEStatus(req, res, agente_id, status);
-    } else if (agente_id) {
-        return listarPorAgente(req, res, agente_id);
-    } else if (status) {
-        return listarPorStatus(req, res, status);
+---
+
+#### b) Endpoint para busca de casos por palavra-chave (`/casos/search?q=...`)
+
+Você implementou assim:
+
+```js
+function getCasosPorString(req, res) {
+    const { q } = req.query;
+
+    if(!q) {
+        return res.status(400).json(errorHandler.handleError(400, "Parâmetro não encontrado", "parametroNaoEncontrado", "Verifique se está utilizando o parametro 'q' e se colocou alguma palavra para buscar."));
     }
 
-    const dados = casosRepository.findAll();
+    const dados = casosRepository.encontrarCasoPorString(q);
+
+    if (!dados || dados.length === 0) {
+        return res.status(404).json(errorHandler.handleError(404, "Caso não encontrado", "casoNaoEncontrado", "Nenhum caso encontrado com a palavra fornecida."));
+    }
+
     res.status(200).json(dados);
 }
 ```
 
-Ou, se preferir, faça as funções auxiliares retornarem dados e erros, e o controlador principal faz o tratamento.
+No repositório:
+
+```js
+function encontrarCasoPorString(search) {
+    const dados = casos.filter((caso) => 
+        caso.titulo.toLowerCase().includes(search.toLowerCase()) ||
+        caso.descricao.toLowerCase().includes(search.toLowerCase())
+    );
+
+    return dados;
+}
+```
+
+**Tudo certo aqui!** 👌 O problema pode estar na forma como o endpoint está registrado nas rotas:
+
+```js
+router.get("/casos/search", casosController.getCasosPorString)
+```
+
+Esse endpoint está correto, mas algumas ferramentas e testes esperam que o parâmetro `q` seja passado corretamente na query string, como `/casos/search?q=palavra`.
+
+**Dica:** Teste diretamente com URLs no navegador ou Postman para garantir que o parâmetro `q` está chegando corretamente no `req.query`.
 
 ---
 
-### 2. Ordem da verificação dos parâmetros na função `getAllCasos`
+#### c) Filtros de agentes por data de incorporação com ordenação (sort)
 
-Na sua função `getAllCasos`, você verifica primeiro se `agente_id` existe, depois se `status` existe, e só depois se ambos existem:
+Você implementou o filtro e ordenação no controller `agentesController`:
 
 ```js
-function getAllCasos(req, res) {
-    const { agente_id, status } = req.query;
+function getAllAgentes(req, res) {
+    const { cargo, sort } = req.query;
 
-    if (agente_id) {
-        return listarPorAgente(agente_id);
+    if (cargo) {
+        if (cargo !== "inspetor" && cargo !== "delegado") {
+            return res.status(400).json(errorHandler.handleError(400, "Cargo Inválido", "cargoInvalido", "Tipo de cargo inválido. Selecionar 'inspetor' ou 'delegado'."));
+        }
+
+        const dados = agentesRepository.listarAgentesPorCargo(cargo);
+
+        return res.status(200).json(dados);
     }
-    else if (status) {
-        return listarPorStatus(status);
+
+    if (sort) {
+        if (sort !== "dataDeIncorporacao" && sort !== "-dataDeIncorporacao") {
+            return res.status(400).json(errorHandler.handleError(400, "Tipo de Sort Inválido", "tipoSortInvalido", "Tipo de sort inválido. Selecionar 'dataDeIncorporacao' ou '-dataDeIncorporacao'."));
+        }
+
+        const dados = agentesRepository.listarDataDeIncorporacao(sort)
+
+        return res.status(200).json(dados)
     }
-    else if (agente_id && status) {
-        return listarPorAgenteEStatus(agente_id, status);
-    }
-    // ...
+
+    const dados = agentesRepository.encontrarAgentes();
+
+    res.status(200).json(dados);
 }
 ```
 
-Mas esse fluxo nunca vai chegar na verificação `agente_id && status` porque se `agente_id` existir, ele já retorna antes. Isso faz com que a filtragem combinada por agente e status nunca aconteça.
-
-**Como resolver?**
-
-Verifique primeiro se os dois parâmetros estão presentes:
+No repositório:
 
 ```js
-if (agente_id && status) {
-    return listarPorAgenteEStatus(agente_id, status);
-} else if (agente_id) {
-    return listarPorAgente(agente_id);
-} else if (status) {
-    return listarPorStatus(status);
+function listarDataDeIncorporacao(sort) {
+    const agentesTemp = [...agentes];
+    if (sort === "dataDeIncorporacao") {
+        const dados = agentesTemp.sort((agente1, agente2) => {
+            const data1 = new Date(agente1.dataDeIncorporacao);
+            const data2 = new Date(agente2.dataDeIncorporacao);
+            return data1.getTime() - data2.getTime();
+        });
+
+        return dados;
+    }
+
+    const dados = agentesTemp.sort((agente1, agente2) => {
+        const data1 = new Date(agente1.dataDeIncorporacao);
+        const data2 = new Date(agente2.dataDeIncorporacao);
+        return data2.getTime() - data1.getTime();
+    });
+
+    return dados;
 }
 ```
+
+**Aqui, a lógica está correta, mas o problema pode estar no fato de que, quando você usa o filtro por `cargo` e o parâmetro `sort` ao mesmo tempo, só o primeiro é processado.** Ou seja, se alguém fizer `/agentes?cargo=delegado&sort=dataDeIncorporacao`, seu código vai ignorar o `sort`.
+
+**Como melhorar?**
+
+Você pode permitir que ambos os filtros funcionem juntos, por exemplo:
+
+```js
+function getAllAgentes(req, res) {
+    let dados = agentesRepository.encontrarAgentes();
+
+    const { cargo, sort } = req.query;
+
+    if (cargo) {
+        if (cargo !== "inspetor" && cargo !== "delegado") {
+            return res.status(400).json(errorHandler.handleError(400, "Cargo Inválido", "cargoInvalido", "Tipo de cargo inválido. Selecionar 'inspetor' ou 'delegado'."));
+        }
+        dados = agentesRepository.listarAgentesPorCargo(cargo);
+    }
+
+    if (sort) {
+        if (sort !== "dataDeIncorporacao" && sort !== "-dataDeIncorporacao") {
+            return res.status(400).json(errorHandler.handleError(400, "Tipo de Sort Inválido", "tipoSortInvalido", "Tipo de sort inválido. Selecionar 'dataDeIncorporacao' ou '-dataDeIncorporacao'."));
+        }
+        dados = agentesRepository.listarDataDeIncorporacao(sort, dados);
+    }
+
+    return res.status(200).json(dados);
+}
+```
+
+E ajustar o repositório para receber um array base para ordenar:
+
+```js
+function listarDataDeIncorporacao(sort, agentesBase = agentes) {
+    const agentesTemp = [...agentesBase];
+    // resto do código igual
+}
+```
+
+Assim você consegue combinar filtros e ordenação, deixando a API mais flexível e alinhada com o esperado em filtros complexos.
 
 ---
 
-### 3. Pequena inconsistência no retorno de arrays vazios
+### 2. Organização e Estrutura do Projeto
 
-Nas funções do repositório, como `listarCasosPorAgente` e similares, você sempre retorna um array (mesmo que vazio). No controller, você verifica se o resultado é falso para retornar 404:
-
-```js
-if (!dados) {
-    return res.status(404).json(...);
-}
-```
-
-Mas um array vazio não é falsy em JS, então essa verificação não funciona para casos onde não há resultados.
-
-**Sugestão:**
-
-Verifique se o array está vazio para retornar 404:
-
-```js
-if (!dados || dados.length === 0) {
-    return res.status(404).json(...);
-}
-```
-
----
-
-### 4. Organização da estrutura de pastas e arquivos
-
-Sua estrutura está muito bem organizada, exatamente como esperávamos:
+Sua estrutura de diretórios está perfeita e segue o padrão esperado! 📁✨
 
 ```
 .
 ├── controllers/
+│   ├── agentesController.js
+│   └── casosController.js
 ├── repositories/
+│   ├── agentesRepository.js
+│   └── casosRepository.js
 ├── routes/
+│   ├── agentesRoutes.js
+│   └── casosRoutes.js
 ├── utils/
-├── docs/
+│   └── errorHandler.js
 ├── server.js
 ├── package.json
+├── docs/
+│   └── swagger.js
 ```
 
-Isso é ótimo! Manter essa organização vai te ajudar a escalar o projeto com facilidade.
+Essa organização modular ajuda muito na manutenção e escalabilidade do seu projeto. Parabéns por seguir essa arquitetura! 👏
 
 ---
 
-## 📚 Recursos para você aprofundar ainda mais
+### 3. Validações e Tratamento de Erros
 
-- Sobre o uso correto do Express e roteamento:  
-  https://expressjs.com/pt-br/guide/routing.html  
-  Esse material ajuda a entender como passar `req` e `res` corretamente entre funções.
+Você fez um excelente trabalho implementando as validações e usando um `errorHandler` para centralizar as mensagens de erro personalizadas. Isso deixa seu código limpo e consistente. 👍
 
-- Validação e tratamento de erros na API REST:  
-  https://developer.mozilla.org/pt-BR/docs/Web/HTTP/Status/400  
-  https://developer.mozilla.org/pt-BR/docs/Web/HTTP/Status/404  
-  Para entender bem os status e como criar respostas consistentes.
-
-- Arquitetura MVC para Node.js/Express:  
-  https://youtu.be/bGN_xNc4A1k?si=Nj38J_8RpgsdQ-QH  
-  Esse vídeo vai ajudar a manter seu projeto organizado e modular.
+Só um toque para o caso do endpoint `/casos/:caso_id/agente` que comentei antes: lembre-se de validar os tipos das variáveis e se está tratando corretamente os objetos e arrays para evitar erros lógicos.
 
 ---
 
-## 📝 Resumo rápido dos pontos para focar
+### Recursos que podem te ajudar a aprimorar esses pontos:
 
-- Corrija o uso do objeto `res` dentro das funções auxiliares no `casosController.js`, passando `req` e `res` para elas ou ajustando a lógica para que o controlador principal envie as respostas.
-- Ajuste a ordem da verificação dos parâmetros `agente_id` e `status` no endpoint `getAllCasos` para que a filtragem combinada funcione.
-- Verifique se arrays retornados estão vazios para decidir quando retornar 404, evitando falsos negativos.
-- Continue mantendo sua estrutura de pastas organizada como está — isso é um diferencial!
+- Para entender melhor como montar filtros combinados e ordenação em APIs REST com Express.js, dê uma olhada neste vídeo super didático:  
+  https://youtu.be/RSZHvQomeKE  
+  (Ele explica desde o básico até filtros complexos usando query params.)
+
+- Para entender profundamente o roteamento com `express.Router()` e como organizar seus endpoints, recomendo a documentação oficial:  
+  https://expressjs.com/pt-br/guide/routing.html
+
+- Para aprender mais sobre validação de dados e tratamento de erros personalizados, este artigo da MDN é excelente:  
+  https://developer.mozilla.org/pt-BR/docs/Web/HTTP/Status/400
+
+- Para manipulação de arrays em JavaScript (como combinar filtros e ordenações), este vídeo é muito bom:  
+  https://youtu.be/glSgUKA5LjE?si=t9G2NsC8InYAU9cI
 
 ---
 
-Gabriel, você está com uma base muito sólida e já entregou uma API funcional e bem estruturada. Com esses pequenos ajustes que te mostrei, sua API vai ficar ainda mais robusta e profissional! 💪🔥
+## Resumo dos pontos para você focar:
 
-Continue praticando e explorando o mundo do Node.js e Express, você está fazendo um trabalho incrível! Se precisar de qualquer ajuda para entender os conceitos, não hesite em me chamar. Estou aqui para te ajudar no que for preciso! 😉
+- ⚠️ Corrigir a validação no endpoint `/casos/:caso_id/agente` para verificar se o retorno é objeto, não array (remover `dados.length === 0`).
 
-Um grande abraço e até a próxima revisão! 👋✨
+- ⚠️ Testar e garantir que o endpoint `/casos/search` está recebendo o parâmetro `q` corretamente na query string.
+
+- ⚠️ Ajustar o filtro e ordenação combinados no endpoint `/agentes` para permitir o uso simultâneo de `cargo` e `sort`.
+
+- ✅ Continue mantendo a estrutura modular e os tratamentos de erro personalizados — isso está muito bem feito!
+
+---
+
+Gabriel, seu código mostra que você já tem uma base muito sólida e está no caminho certo para se tornar um especialista em APIs com Node.js e Express! 🚀 Continue praticando esses detalhes de validação e filtros, pois eles fazem toda a diferença em APIs profissionais. Qualquer dúvida, estou aqui para te ajudar! 😉
+
+Um forte abraço e sucesso nos seus próximos desafios! 👊✨
 
 > Caso queira tirar uma dúvida específica, entre em contato com o Chapter no nosso [discord](https://discord.gg/DryuHVnz).
 
