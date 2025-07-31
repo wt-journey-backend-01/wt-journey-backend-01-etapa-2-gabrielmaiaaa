@@ -2,35 +2,61 @@ const casosRepository = require("../repositories/casosRepository");
 const agentesRepository = require("../repositories/agentesRepository");
 const errorHandler = require("../utils/errorHandler");
 
+function listarPorAgente(agente_id) {
+    if (!agentesRepository.encontrarAgenteById(agente_id)) {
+        return res.status(404).json(errorHandler.handleError(404, "ID do agente informado não encontrado no sistema.", "agenteNaoEncontrado", "ID do agente informado não encontrado no sistema."));
+    }
+
+    const dados = casosRepository.listarCasosPorAgente(agente_id);
+
+    if (!dados) {
+        return res.status(404).json(errorHandler.handleError(404, "Caso não encontrado com esse id de agente", "casoNaoEncontrado", "Caso não encontrado com esse id de agente"));
+    }
+
+    return res.status(200).json(dados);
+}
+
+function listarPorStatus(status) {
+    if (status !== "aberto" && status !== "solucionado") {
+        return res.status(400).json(errorHandler.handleError(400, "Tipo de status inválido", "tipoStatusInvalido", "Tipo de status inválido. Selecionar 'aberto' ou 'solucionado'."));
+    }
+
+    const dados = casosRepository.listarCasosPorStatus(status);
+
+    if (!dados) {
+        return res.status(404).json(errorHandler.handleError(404, "Caso não encontrado", "casoNaoEncontrado", "Caso não encontrado com esse status"));
+    }
+
+    return res.status(200).json(dados);
+}
+
+function listarPorAgenteEStatus(agente_id, status) {
+    if (!agentesRepository.encontrarAgenteById(agente_id)) {
+        return res.status(404).json(errorHandler.handleError(404, "ID do agente informado não encontrado no sistema.", "agenteNaoEncontrado", "ID do agente informado não encontrado no sistema."));
+    }
+
+    const dados = casosRepository.listarCasosPorAgenteEStatus(agente_id, status);
+
+    if (!dados) {
+        return res.status(404).json(errorHandler.handleError(404, "Caso não encontrado", "casoNaoEncontrado", "Caso não encontrado com esse agente e status"));
+    }
+
+    return res.status(200).json(dados);
+}
+
 function getAllCasos(req, res) {
     const { agente_id, status } = req.query;
 
-    if (agente_id){
-        if (!agentesRepository.encontrarAgenteById(agente_id)) {
-            return res.status(404).json(errorHandler.handleError(404, "ID do agente informado não encontrado no sistema.", "agenteNaoEncontrado", "ID do agente informado não encontrado no sistema."));
-        }
-
-        const dados = casosRepository.listarCasosPorAgente(agente_id);
-
-        if (!dados) {
-            return res.status(404).json(errorHandler.handleError(404, "Caso não encontrado com esse id de agente", "casoNaoEncontrado", "Caso não encontrado com esse id de agente"));
-        }
-
-        return res.status(200).json(dados);
+    if (agente_id) {
+        return listarPorAgente(agente_id);
     }
 
-    if (status){
-        if (status !== "aberto" && status !== "solucionado") {
-            return res.status(400).json(errorHandler.handleError(400, "Tipo de status inválido", "tipoStatusInvalido", "Tipo de status inválido. Selecionar 'aberto' ou 'solucionado'."));
-        }
+    else if (status) {
+        return listarPorStatus(status);
+    }
 
-        const dados = casosRepository.listarCasosPorStatus(status);
-
-        if (!dados) {
-            return res.status(404).json(errorHandler.handleError(404, "Caso não encontrado", "casoNaoEncontrado", "Caso não encontrado com esse status"));
-        }
-
-        return res.status(200).json(dados);
+    else if (agente_id && status) {
+        return listarPorAgenteEStatus(agente_id, status);
     }
 
     const dados = casosRepository.findAll();

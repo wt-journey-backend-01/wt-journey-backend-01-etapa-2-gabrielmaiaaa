@@ -17,7 +17,7 @@ function encontrarAgenteById(id){
     const agente = agentes.find((agente) => agente.id === id);
 
     if(!agente){
-        return false;
+        return null;
     }
 
     return agente;
@@ -35,7 +35,7 @@ function atualizarAgente(id, agenteAtualizado) {
     const idAgente = agentes.findIndex((agente) => agente.id === id);
 
     if(idAgente === -1){
-        return false;
+        return null;
     }
 
     agentes[idAgente] = { id: agentes[idAgente].id, ...agenteAtualizado };
@@ -47,7 +47,7 @@ function atualizarParcialAgente(id, agenteAtualizado) {
     const idAgente = agentes.findIndex((agente) => agente.id === id);
 
     if(idAgente === -1){
-        return false;
+        return null;
     }
 
     agentes[idAgente].nome = agenteAtualizado.nome || agentes[idAgente].nome;
@@ -61,7 +61,7 @@ function apagarAgente(id) {
     const idAgente = agentes.findIndex((agente) => agente.id === id);
 
     if(idAgente === -1){
-        return false;
+        return null;
     }
 
     agentes.splice(idAgente, 1);

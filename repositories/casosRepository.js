@@ -38,7 +38,7 @@ function atualizarCaso(id, casoAtualizado) {
     const idCasos = casos.findIndex((caso) => caso.id === id);
 
     if (idCasos === -1) {
-        return false;
+        return null;
     }
 
     casos[idCasos] = { id: casos[idCasos].id, ...casoAtualizado };
@@ -50,7 +50,7 @@ function atualizarParcialCaso(id, casoAtualizado) {
     const idCasos = casos.findIndex((caso) => caso.id === id);
 
     if (idCasos === -1) {
-        return false;
+        return null;
     }
 
     casos[idCasos].titulo = casoAtualizado.titulo || casos[idCasos].titulo;
@@ -65,7 +65,7 @@ function apagarCaso(id) {
     const idCasos = casos.findIndex((caso) => caso.id === id);
 
     if (idCasos === -1) {
-        return false;
+        return null;
     }
 
     casos.splice(idCasos, 1);
@@ -85,17 +85,23 @@ function listarCasosPorStatus(status) {
     return dados;
 }
 
+function listarCasosPorAgenteEStatus(agente_id, status) {
+    const dados = casos.filter((caso) => caso.agente_id === agente_id && caso.status === status);
+
+    return dados;
+}
+
 function encontrarAgenteDoCaso(caso_id) {
     const idCaso = casos.findIndex((caso) => caso.id === caso_id);
 
     if(idCaso === -1) {
-        return false
+        return null
     }
 
     const idAgente = casos[idCaso].agente_id;
     const dados = agentesRepository.encontrarAgenteById(idAgente);
 
-    return dados;
+    return dados || null;
 }
 
 function encontrarCasoPorString(search) {
@@ -117,5 +123,6 @@ module.exports = {
     listarCasosPorAgente,
     listarCasosPorStatus,
     encontrarAgenteDoCaso,
-    encontrarCasoPorString
+    encontrarCasoPorString,
+    listarCasosPorAgenteEStatus
 };
