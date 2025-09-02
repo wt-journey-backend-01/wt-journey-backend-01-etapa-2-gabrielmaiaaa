@@ -8,9 +8,8 @@ const validarDadosCasos = z.object({
     status: z.string()
                  .nonempty("Status é obrigatório")
                  .regex(/^(aberto|solucionado)$/, "Status inválido"),
-    agente_id: z.coerce.number({ required_error: "Id inválido" })
-                                   .int({ required_error: "Id inválido" })
-                                   .nonnegative({ required_error: "Id inválido" })
+    agente_id: z.string()
+                       .nonempty("ID é obrigatório")
 }).strict();
 
 const validarDadosParcialCasos = z.object({
@@ -24,25 +23,21 @@ const validarDadosParcialCasos = z.object({
                  .nonempty("Status não pode ser vazio")
                  .regex(/^(aberto|solucionado)$/, "Status inválido")
                  .optional(),
-    agente_id: z.coerce.number({ required_error: "Id inválido" })
-                                   .int({ required_error: "Id inválido" })
-                                   .nonnegative({ required_error: "Id inválido" })
-                                   .optional()
+    agente_id: z.string()
+                        .nonempty("ID é obrigatório")
+                        .optional()
 }).strict();
 
 const validarIDs = z.object({
-    id: z.coerce.number({ required_error: "Id inválido" })
-                      .int({ required_error: "Id inválido" })
-                      .nonnegative({ required_error: "Id inválido" })
+    id: z.coerce.string()
+                      .nonempty("ID é obrigatório")
                       .optional(),
-    agente_id: z.coerce.number({ required_error: "Id inválido" })
-                      .int({ required_error: "Id inválido" })
-                      .nonnegative({ required_error: "Id inválido" })
-                      .optional(),
-    caso_id: z.coerce.number({ required_error: "Id inválido" })
-                      .int({ required_error: "Id inválido" })
-                      .nonnegative({ required_error: "Id inválido" })
-                      .optional()
+    agente_id: z.string()
+                        .nonempty("ID é obrigatório")
+                        .optional(),
+    caso_id: z.string()
+                    .nonempty("ID é obrigatório")
+                    .optional(),
 });
 
 const validarAgente_idEStatus = z.object({
@@ -50,10 +45,9 @@ const validarAgente_idEStatus = z.object({
                  .nonempty("Status não pode ser vazio")
                  .regex(/^(aberto|solucionado)$/, "Status inválido")
                  .optional(),
-    agente_id: z.coerce.number({ required_error: "Id inválido" })
-                      .int({ required_error: "Id inválido" })
-                      .nonnegative({ required_error: "Id inválido" })
-                      .optional()
+    agente_id: z.string()
+                        .nonempty("ID é obrigatório")
+                        .optional()
 }).strict();
 
 const validarString = z.object({

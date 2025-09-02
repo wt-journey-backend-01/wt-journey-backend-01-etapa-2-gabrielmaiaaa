@@ -22,9 +22,8 @@ const dadosParcialAgentes = z.object({
 }).strict();
 
 const agenteIdValido = z.object({
-    id: z.coerce.number({ required_error: "Id inválido" })
-                      .int({ required_error: "Id inválido" })
-                      .nonnegative({ required_error: "Id inválido" })
+    id: z.coerce.string()
+                      .nonempty("ID é obrigatório")
 });
 
 const agenteCargoESorteValido = z.object({
