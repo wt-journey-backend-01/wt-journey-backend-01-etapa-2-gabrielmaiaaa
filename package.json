@@ -23,7 +23,9 @@
   "homepage": "https://github.com/wt-journey-backend-01/wt-journey-backend-01-etapa-2-gabrielmaiaaa#readme",
   "dependencies": {
     "express": "^5.1.0",
+    "swagger-jsdoc": "^6.2.8",
     "swagger-ui-express": "^5.0.1",
-    "uuid": "^11.1.0"
+    "uuid": "^11.1.0",
+    "zod": "^4.1.5"
   }
 }

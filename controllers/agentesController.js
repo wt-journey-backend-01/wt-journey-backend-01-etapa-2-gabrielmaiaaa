@@ -1,9 +1,17 @@
 const agentesRepository = require("../repositories/agentesRepository")
 const errorHandler = require("../utils/errorHandler");
+const { ApiError } = require("../utils/errorHandler");
+const { dadosAgentes, dadosParcialAgentes, agenteIdValido, agenteCargoESorteValido } = require('../utils/agenteValidacao');
+const { z } = require('zod');
 
 function isValidDate(dateString) {
-    const data = new Date(dateString);
     const regex = /^\d{4}-\d{2}-\d{2}$/;
+    const [ano, mes, dia] = dateString.split('-').map(Number);
+    const data = new Date(ano, mes-1, dia);
+
+    if (data.getFullYear() !== ano || data.getMonth() + 1 !== mes || data.getDate() !== dia) {
+        return false;
+    }
 
     if (!regex.test(dateString)) {
         return false;
@@ -18,126 +26,180 @@ function isValidDate(dateString) {
         return false;
     }
 
+    const limiteTempo = new Date();
+    limiteTempo.setFullYear(limiteTempo.getFullYear() - 120);
+
+    if (data < limiteTempo) {
+        return false;
+    }
+
     return true;
 }
 
-function getAllAgentes(req, res) {
-    const { cargo, sort } = req.query;
+function getAllAgentes(req, res, next) {
+    try {
+        const { cargo, sort } = agenteCargoESorteValido.parse(req.query);      
 
-    if (cargo) {
-        if (cargo !== "inspetor" && cargo !== "delegado") {
-            return res.status(400).json(errorHandler.handleError(400, "Cargo Inválido", "cargoInvalido", "Tipo de cargo inválido. Selecionar 'inspetor' ou 'delegado'."));
+        if (cargo) {
+            const dados = agentesRepository.listarAgentesPorCargo(cargo);
+            
+            if(!dados){
+                return next(new ApiError(404, "Nenhum agente foi encontrado com esse cargo"));
+            }
+
+            return res.status(200).json(dados);
         }
 
-        const dados = agentesRepository.listarAgentesPorCargo(cargo);
+        if (sort) {
+            const dados = agentesRepository.listarDataDeIncorporacao(sort);
 
-        return res.status(200).json(dados);
-    }
+            if (!dados || dados.length === 0) {
+                return next(new ApiError(404, "Nenhum agente foi encontrado com esse filtro."));
+            }
 
-    if (sort) {
-        if (sort !== "dataDeIncorporacao" && sort !== "-dataDeIncorporacao") {
-            return res.status(400).json(errorHandler.handleError(400, "Tipo de Sort Inválido", "tipoSortInvalido", "Tipo de sort inválido. Selecionar 'dataDeIncorporacao' ou '-dataDeIncorporacao'."));
+            return res.status(200).json(dados)
         }
 
-        const dados = agentesRepository.listarDataDeIncorporacao(sort)
+        const dados = agentesRepository.encontrarAgentes();
 
-        return res.status(200).json(dados)
-    }
-
-    const dados = agentesRepository.encontrarAgentes();
-
-    res.status(200).json(dados);
-}
-
-function getAgente(req, res) {
-    const { id } = req.params;
-    const dados = agentesRepository.encontrarAgenteById(id);
-
-    if (!dados || dados.length === 0) {
-        return res.status(404).json(errorHandler.handleError(404, "Agente não encontrado", "agenteNaoEncontrado", "Agente não foi encontrado com esse id."));
-    }
-
-    res.status(200).json(dados);
-}
-
-function postAgente(req, res) {
-    const { nome, dataDeIncorporacao, cargo } = req.body;
-
-    if(!nome || !dataDeIncorporacao || !cargo) {
-        return res.status(400).json(errorHandler.handleError(400, "Campos Obrigatórios", "camposObrigatorios", "Todos os campos são obrigatórios."));
-    }
-
-    if (!isValidDate(dataDeIncorporacao)) {
-        return res.status(400).json(errorHandler.handleError(400, "Data Inválida", "dataInvalida", "Data de Incorporação inválida ou no futuro."));
-    }
-
-    const novoAgente = { nome, dataDeIncorporacao, cargo };
-    const dados = agentesRepository.adicionarAgente(novoAgente);
-    
-    res.status(201).json(dados);
-}
-
-function putAgente(req, res) {
-    const { id } = req.params;
-    const { id: idBody, nome, dataDeIncorporacao, cargo } = req.body;
-
-    if(idBody && idBody !== id) {
-        return res.status(400).json(errorHandler.handleError(400, "Alteração de ID não permitida", "idAlterado", "O campo 'id' não pode ser alterado."));
-    }
-
-    if(!nome || !dataDeIncorporacao || !cargo) {
-        return res.status(400).json(errorHandler.handleError(400, "Campos Obrigatórios", "camposObrigatorios", "Todos os campos são obrigatórios."));
-    }
-
-    if (!isValidDate(dataDeIncorporacao)) {
-        return res.status(400).json(errorHandler.handleError(400, "Data Inválida", "dataInvalida", "Data de Incorporação inválida ou no futuro."));
-    }
-
-    const agenteAtualizado = { nome, dataDeIncorporacao, cargo };
-    const dados = agentesRepository.atualizarAgente(id, agenteAtualizado);
-
-    if (!dados || dados.length === 0) {
-        return res.status(404).json(errorHandler.handleError(404, "Agente não encontrado", "agenteNaoEncontrado", "Agente não foi encontrado com esse id."));
-    } 
-
-    res.status(200).json(dados);
-}
-
-function patchAgente(req, res) {
-    const { id } = req.params;
-    const { id: idBody, nome, dataDeIncorporacao, cargo } = req.body;
-
-    if(idBody && idBody !== id) {
-        return res.status(400).json(errorHandler.handleError(400, "Alteração de ID não permitida", "idAlterado", "O campo 'id' não pode ser alterado."));
+        res.status(200).json(dados);
+    } catch (error) {
+        if (error instanceof z.ZodError) {
+            return next(new ApiError(400, "Parâmetros inválidos"))
+        }
+        next(error);  
     }
     
-    if(!nome && !dataDeIncorporacao && !cargo) {
-        return res.status(400).json(errorHandler.handleError(400, "Um Campo Obrigatório", "camposObrigatorios", "Pelo menos um campo deve ser fornecido."));
-    }
-
-    if (dataDeIncorporacao && !isValidDate(dataDeIncorporacao)) {
-        return res.status(400).json(errorHandler.handleError(400, "Data Inválida", "dataInvalida", "Data de Incorporação inválida ou no futuro."));
-    }
-
-    const agenteAtualizado = { nome, dataDeIncorporacao, cargo };
-    const dados = agentesRepository.atualizarParcialAgente(id, agenteAtualizado);
-
-    if (!dados || dados.length === 0) {
-        return res.status(404).json(errorHandler.handleError(404, "Agente não encontrado", "agenteNaoEncontrado", "Agente não foi encontrado com esse id."));
-    } 
-    
-    res.status(200).json(dados);
 }
 
-function deleteAgente(req, res) {
-    const { id } = req.params;
-    const status = agentesRepository.apagarAgente(id);
+function getAgente(req, res, next) {
+    try {
+        const { id } = agenteIdValido.parse(req.params);
+        const dados = agentesRepository.encontrarAgenteById(id);
 
-    if (!status) {
-        return res.status(404).json(errorHandler.handleError(404, "Agente não encontrado", "agenteNaoEncontrado", "Agente não foi encontrado com esse id."));
-    } 
-    
-    res.status(204).send();
+        if (!dados || dados.length === 0) {
+            return next(new ApiError(404, "Agente não foi encontrado com esse id."));
+        }
+
+        res.status(200).json(dados);
+    } catch (error) {
+        if (error instanceof z.ZodError) {
+            return next(new ApiError(404, "ID inválido"))
+        }
+        return next(error);
+        
+    }
+}
+
+function postAgente(req, res, next) {
+    try {
+        const { nome, dataDeIncorporacao, cargo } = dadosAgentes.parse(req.body);
+
+        if (!isValidDate(dataDeIncorporacao)) {
+            return next(new ApiError(400, "Data de Incorporação inválida ou no futuro ou com mais de 120 anos."));
+        }
+
+        const novoAgente = { nome, dataDeIncorporacao, cargo };
+        const dados = agentesRepository.adicionarAgente(novoAgente);
+
+        if(!dados){
+            return next(new ApiError(404, "Não foi possivel criar esse agente"));
+        }
+        
+        res.status(201).json(dados);
+    } catch (error) {
+        if (error instanceof z.ZodError) {
+            return next(new ApiError(400, "Parâmetros inválidos"))
+        }
+        next(error);
+    }
+}
+
+function putAgente(req, res, next) {
+    try {
+        let id;
+        try {
+            id = agenteIdValido.parse(req.params).id;
+        } catch (error) {
+            if (error instanceof z.ZodError) {
+                return next(new ApiError(404, "ID inválido"))
+            } 
+            return next(error);  
+        }
+
+        const { nome, dataDeIncorporacao, cargo } = dadosAgentes.parse(req.body);
+
+        if (!isValidDate(dataDeIncorporacao)) {
+            return next(new ApiError(400, "Data de Incorporação inválida ou no futuro ou com mais de 120 anos."));
+        }
+
+        const agenteAtualizado = { nome, dataDeIncorporacao, cargo };
+        const dados = agentesRepository.atualizarAgente(id, agenteAtualizado);
+
+        if (!dados || dados.length === 0) {
+            return next(new ApiError(404, "Agente não foi encontrado com esse id."));
+        } 
+
+        res.status(200).json(dados);        
+    } catch (error) {
+        if (error instanceof z.ZodError) {
+            return next(new ApiError(400, "Parâmetros inválidos"))            
+        }
+        next(error);
+    }
+}
+
+function patchAgente(req, res, next) {
+    try {
+        let id;
+        try {
+            id = agenteIdValido.parse(req.params).id;
+        } catch (error) {
+            if (error instanceof z.ZodError) {
+                return next(new ApiError(404, "ID inválido"))
+            } 
+            return next(error);  
+        }
+
+        const { nome, dataDeIncorporacao, cargo } = dadosParcialAgentes.parse(req.body);
+
+        if (dataDeIncorporacao && !isValidDate(dataDeIncorporacao)) {
+            return next(new ApiError(400, "Data de Incorporação inválida ou no futuro ou com mais de 120 anos."));
+        }
+
+        const agenteAtualizado = { nome, dataDeIncorporacao, cargo };
+        const dados = agentesRepository.atualizarParcialAgente(id, agenteAtualizado);
+
+        if (!dados || dados.length === 0) {
+            return next(new ApiError(404, "Agente não foi encontrado com esse id."));
+        } 
+        
+        res.status(200).json(dados);
+    } catch (error) {
+        if (error instanceof z.ZodError) {
+            return next(new ApiError(400, "Parâmetros inválidos"))            
+        }
+        next(error);
+    }
+}
+
+function deleteAgente(req, res, next) {
+    try {
+        const { id } = agenteIdValido.parse(req.params);
+
+        const status = agentesRepository.apagarAgente(id);
+
+        if (!status) {
+            return next(new ApiError(404, "Agente não foi encontrado com esse id."));
+        } 
+        
+        res.status(204).send();        
+    } catch (error) {
+        if (error instanceof z.ZodError) {
+            return next(new ApiError(404, "ID inválido"))
+        }
+        next(error);
+    }
 }
 
 module.exports = {
