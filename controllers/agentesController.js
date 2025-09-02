@@ -2,8 +2,13 @@ const agentesRepository = require("../repositories/agentesRepository")
 const errorHandler = require("../utils/errorHandler");
 
 function isValidDate(dateString) {
-    const data = new Date(dateString);
     const regex = /^\d{4}-\d{2}-\d{2}$/;
+    const [ano, mes, dia] = dateString.split('-').map(Number);
+    const data = new Date(ano, mes-1, dia);
+
+    if (data.getFullYear() !== ano || data.getMonth() + 1 !== mes || data.getDate() !== dia) {
+        return false;
+    }
 
     if (!regex.test(dateString)) {
         return false;
@@ -15,6 +20,13 @@ function isValidDate(dateString) {
 
     const hoje = new Date();
     if (data > hoje){
+        return false;
+    }
+
+    const limiteTempo = new Date();
+    limiteTempo.setFullYear(limiteTempo.getFullYear() - 120);
+
+    if (data < limiteTempo) {
         return false;
     }
 
